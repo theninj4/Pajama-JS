@@ -20,6 +20,6 @@ To run the clientside PajamaJS demo: `node demo/clientside/server.js` then brows
 
 To run the serverside PajamaJS demo: `node demo/serverside/server.js` then browse to `localhost:8080`
 
-To run the inverted PajamaJS demo: `node demo/inverted/server.js` then browse to `localhost:8080`
+To run the inverted PajamaJS demo: `node demo/inverted/server.js` then browse to `localhost:8080/index`
 
 After making any changes to the `src` folder: `make build`
