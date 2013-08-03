@@ -1,0 +1,25 @@
+<html>
+  <head>
+    <script type="text/javascript" src="./browser.pajama.js"></script>
+    <script type="text/javascript" src="./UI.js"></script>
+  </head>
+  <body>
+    <script type="text/javascript">
+      var mainController = function(body) {
+        body.append(new pjs.view("Loading"));
+
+        setTimeout(function() {
+          var model = new pjs.model("LibraryModel");
+          var view = new pjs.view("LibraryView", model);
+          body.clear();
+          body.append(view);
+        }, 1000);
+        
+      };
+
+      var body = new pjs.element();
+      document.body.appendChild(body.dom);
+      mainController(body);
+    </script>
+  </body>
+</html>

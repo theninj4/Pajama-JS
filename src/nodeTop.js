@@ -1,4 +1,3 @@
-
   document = { };
   var elemCount = 0;
 
@@ -33,17 +32,37 @@
         if (!events[event]) events[event] = [];
         events[event].push(callback);
       },
+      removeEventListener: function(event, callback) {
+        if (!events[event]) return;
+        var i = events[event].indexOf(callback);
+        if (i >= 0) {
+          events[event].splice(i, 1);
+        }
+      },
       appendChild: function(elem) {
         nodeList.push(elem);
         elem.parentNode = newElement;
+        this.firstChild = nodeList[0];
+      },
+      insertBefore: function(elem, existing) {
+        var location = nodeList.indexOf(existing);
+        elem.parentNode = this;
+        if (location<0) {
+          nodeList.unshift(elem);
+          return;
+        }
+        nodeList.splice(location, 0, elem);
+        this.firstChild = nodeList[0];
       },
       removeChild: function(elem) {
         for (var i=0; i<nodeList.length; i++) {
           if (nodeList[i] == elem) {
             nodeList.splice(i, 1);
+            elem.parentNode = null;
             break;
           }
         }
+        this.firstChild = nodeList[0];
       },
       childNodes: nodeList,
       dispatchEvent: function(event) {
@@ -58,6 +77,7 @@
         }
       },
       parentNode: null,
+      firstChild: null,
       setAttribute: function(a, b) {
         this[a] = b;
       }

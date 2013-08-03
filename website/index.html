@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="browser.pajama.min.js"></script>
+  
+    <script src="es5-shim.js"></script>
+    <script src="es5-sham.js"></script>
+
+    <script src="qunit-1.12.0.js"></script>
+    <link rel="stylesheet" type="text/css" href="qunit-1.12.0.css" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="screen.css" />
+    <title>Pajama.js - A serverside and clientside javascript templating engine</title>
+  </head>
+  <body>
+    <a href="https://github.com/theninj4/Pajama-JS"><img style="position: absolute; top: 0; left: 0; border: 0;" src="fork-me.png" /></a>
+
+    <div id="col">
+
+      <img src="logo.png" id="logo" />
+
+      <div id="logo-quote">because HTML has no place in your Javascript app!</div>
+
+      <div id="menu">
+        <a class="menu-item selected" href="index.html">Intro</a>
+        <a class="menu-item" href="usage.html">Usage</a>
+        <a class="menu-item" href="clientside.html">Clientside</a>
+        <a class="menu-item" href="serverside.html">Serverside</a>
+        <a class="menu-item" href="inverted.html">Inverted</a>
+        <a class="menu-item" href="browsers.html">Browsers</a>
+        <div id="menu-bottom"></div>
+      </div>
+
+      <h2>TL;DR</h2>
+      
+      <p>Consider this example running either clientside (on an existing page), serverside (think Airbnb's Render project) or client-server hybrid (using PajamaJS to sync up the clients DOM with the serverside view's in realtime):<p>
+
+      <pre><code>
+      var myModel = {
+        <span class="code-highlight">counter: 0</span>,
+        <span class="code-highlight">increment: function() { this.counter++; }</span>
+      };
+      var elem = new pjs.element(
+        { tag: "div", <span class="code-highlight">innerHTML: { counter: myModel }</span> },
+        { tag: "input", type: "button", <span class="code-highlight">click: { increment: myModel }</span> }
+      );
+      document.body.appendChild(elem.dom);
+      </code></pre>
+
+      <p>If that interests you (it should!) keep reading!</p>
+
+      <hr />
+
+      <h2>In a nutshell:</h2>
+
+      <p>pajama.js (pjs) is a serverside and clientside templating engine which makes use of model-view data bindings to remove all HTML from your Javascript project and generally help you to achieve awesomeness.</p>
+      
+      <p>This is what losing looks like:</p>
+      <pre><code>
+      &lt;input type="text" class="a b c" name="someInput" value="1234567" /&gt;
+
+      &lt;div class="float-right"&gt;
+        &lt;span&gt;Total Price&lt;/span&gt;
+        &lt;input type="text" name="priceInput" value="0.00" /&gt;
+        &lt;span class="small-text"&gt;(in pence)&lt;/span&gt;
+      &lt;/div&gt;
+      </code></pre>
+      <p>and this is winning:</p>
+      <pre><code>
+      { tag: "input", type: "text", classes: ["a", "b", "c"], name: "someInput" }
+
+      { tag: 'div', classes: ['float-right'], contains: [
+        { tag: 'span', text: 'Total Price:' },
+        { tag: 'input', type: 'text', name: 'priceInput', value: '0.00' },
+        { tag: 'span', classes: ['small-text'], text: '(in pence)' }
+      ] }
+      </code></pre>
+
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-42700838-1', 'pajamajs.com');
+        ga('send', 'pageview');
+      </script>
+    </div>
+  </body>
+</html>
+
+
+
+
+

@@ -1,0 +1,290 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="browser.pajama.min.js"></script>
+  
+    <script src="es5-shim.js"></script>
+    <script src="es5-sham.js"></script>
+
+    <script src="qunit-1.12.0.js"></script>
+    <link rel="stylesheet" type="text/css" href="qunit-1.12.0.css" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="screen.css" />
+    <title>Pajama.js - A serverside and clientside javascript templating engine</title>
+  </head>
+  <body>
+    <a href="https://github.com/theninj4/Pajama-JS"><img style="position: absolute; top: 0; left: 0; border: 0;" src="fork-me.png" /></a>
+
+    <div id="col">
+
+      <img src="logo.png" id="logo" />
+
+      <div id="logo-quote">because HTML has no place in your Javascript app!</div>
+
+      <div id="menu">
+        <a class="menu-item" href="index.html">Intro</a>
+        <a class="menu-item selected" href="usage.html">Usage</a>
+        <a class="menu-item" href="clientside.html">Clientside</a>
+        <a class="menu-item" href="serverside.html">Serverside</a>
+        <a class="menu-item" href="inverted.html">Inverted</a>
+        <a class="menu-item" href="browsers.html">Browsers</a>
+        <div id="menu-bottom"></div>
+      </div>
+
+      <h2>Data Binding and Reactive Views</h2>
+
+      <p>This is how we bind a model's value to an element's attribute:</p>
+      <pre><code>
+      <span class="code-highlight">myModel = { price: "1234567" };</span>
+      var elem = new pjs.element(
+        { tag: 'input', type: 'text', name: 'priceInput', <span class="code-highlight">value: { price: myModel }</span> }
+      );
+      document.body.appendChild(elem.dom);
+      </code></pre>
+      <p>Typing in the input box updates myModel. Changing myModel updates the input box.</p>
+     
+      <br />
+
+      <p>This is how we bind DOM events back to a function on the model:</p>
+      <pre><code>
+      <span class="code-highlight">var myModel = {</span>
+      <span class="code-highlight">  alert: function() { alert("This rocks!"); }</span>
+      <span class="code-highlight">};</span>
+      var elem = new pjs.element(
+        { tag: "input", type: "button", <span class="code-highlight">click: { alert: myModel }</span> }
+      );
+      document.body.appendChild(elem.dom);
+      </code></pre>
+      <p>When the <em>click</em> event fires on the button, the <em>alert</em> function on <em>myModel</em> will be invoked.</p>
+
+      <br />
+
+      <p>Taking things further, consider this example:</p>
+      <pre><code>
+      var myModel = {
+        counter: 0,
+        increment: function() { this.counter++; }
+      };
+      var elem = new pjs.element(
+        { tag: "div", <span class="code-highlight">innerHTML: { counter: myModel }</span> },
+        { tag: "input", type: "button", <span class="code-highlight">click: { increment: myModel }</span> }
+      );
+      document.body.appendChild(elem.dom);
+      </code></pre>
+      <p>Clicking the button updates the model, which in turn updates the view. Magic.</p>
+
+      <br />
+
+      <p>We can also bind arrays:</p>
+      <pre><code>
+      var myModel = {
+        <span class="code-highlight">books: [ { name: 'book1', pages: 168 } ]</span>
+      };
+      var elem = new pjs.element(
+        { tag: 'div', <span class="code-highlight">contains: { books: myModel }</span>, <span class="code-highlight">forEach: function(book) {</span>
+          return [ { tag: 'input', value: { name: book  } },
+                   { tag: 'input', value: { pages: book } } ];
+        <span class="code-highlight">}</span> }
+      );
+      document.body.appendChild(elem.dom);
+      </code></pre>
+      <p>Pushing a new object into myModel.books will invoke the forEach function, the result of which will be appended to the DOM. Updating the new myModel.books[1] will update the newly appended DOM elements. Typing in the new DOM elements will update the new object in myModel.books. Pop()'ing the new book from the array will remove it from the DOM. And so on.</p>
+
+      <hr />
+
+      <h2>Other functions on pjs.element:</h2>
+
+      <pre><code>
+      var elem = new pjs.element({ tag: 'input', type: 'text' });
+      elem.append( { tag: 'span' } );
+      elem.append( { tag: 'span' }, { tag: 'div' }, ... );
+      elem.append( [ { tag: 'span' }, ... ] );
+      elem.prepend( { tag: 'div' } );
+      elem.remove();
+      elem.clear();
+      elem.getValue();                // These five functions are great
+      elem.setValue('newValue');      // for writing tests on views!
+      elem.fireEvent('click');        // ..
+      elem.getAttr('className');      // ..
+      elem.setAttr('src', 'blah');    // ..
+      var children = elem.getNodes();         // returns: [ PjsElements ]
+      var html = elem.toMarkup();             // returns: string of static markup
+      document.body.appendChild(elem.dom);    // to insert elements into the dom
+      </code></pre>
+
+      <hr/>
+
+      <h2>Using PajamaJS models:</h2>
+      
+      <pre><code>
+        pjs.defineModel("ExampleModel", function(arg1, arg2) {
+
+          // Append everything to 'this'
+          this.number = 1;
+
+        });
+
+        var instance = new pjs.model("ExampleModel", arg1, arg2);
+      </code></pre>
+
+      <hr />
+
+      <h2>Using PajamaJS views:</h2>
+      
+      <pre><code>
+        pjs.defineView("ExampleView", function(arg1, arg2) {
+
+          // 'this' is an instance of pjs.element({ tag: 'div' })
+          this.append({ innerHTML: 'w00p' });
+
+        });
+
+        var instance = new pjs.view("ExampleView", arg1, arg2);
+      </code></pre>
+
+      <hr />
+
+      <h2>Separating the functional from the presentational:</h2>
+
+      <pre><code>
+      pjs.defineView("SomeView", function(myModel) {
+
+        this._valueInput = { tag: 'input', value: { someValue: myModel } };
+        this._submitButton = { tag: 'input', click: { someFunction: myModel } };
+
+        this.append(
+          { id:'container', classes: ['content-box'], contains: [
+            { tag: 'img', src: 'images/flow.png' },
+            { tag: 'div', classes: ['float-right'], contains: [
+              { tag: 'span', text: 'Total Price:' },
+              this._valueInput,
+              { tag: 'span', classes: ['small-text'], text: '(in pence)' }
+            ] },
+            { tag: 'div', classes: ['clear-right'], contains: [
+              this._submitButton
+            ] }
+          ] }
+        );
+
+      });
+      </code></pre>
+      <p>Check out how we've separated the <em>functional</em> and <em>presentational</em> parts of the view!</p>
+      
+      <hr />
+
+      <h2>Putting it all together:</h2>
+
+      <pre><code>
+      pjs.defineModel("LibraryModel", function() {
+        this.name = "Default";
+        this.books = [ { name: 'brochure', pages: 10 }, 
+                       { name: 'poster',   pages: 1  } ];
+        this.addBook = function() {
+          this.books.push({ name: 'test', pages: Math.random()*100 });
+        };
+        this.sortBooks = function() {
+          this.books.sort(function(a, b) { return a.pages - b.pages; });
+        };
+        this.popBook = function() {
+          this.books.pop();
+        };
+      });
+      </code></pre>
+      <br />
+      <pre><code>
+      pjs.defineView("LibraryView", function(myModel) {
+        this._container = new pjs.element(
+          { tag: 'div', contains: { books: myModel }, forEach: function(book) {
+            return [ { tag: 'input', value: { name: book } },
+                     { tag: 'input', value: { pages: book} } ];
+          } }
+        );
+        this._addButton = { tag: "input", type: "button", value: "Add", 
+                            click: { addBook: myModel } };
+        this._sortButton = { tag: "input", type: "button", value: "Sort", 
+                             click: { sortBooks: myModel } };
+        this._popButton = { tag: "input", type: "button", value: "Pop", 
+                            click: { popBook: myModel } };
+        this.append(this._container, this._addButton, 
+                    this._sortButton, this._popButton);
+      });
+      </code></pre>
+      <br />
+      <pre><code>
+      var myModel = new pjs.model("LibraryModel");
+      var myView = new pjs.view("LibraryView", myModel);
+      document.body.appendChild(myView.dom);
+      </code></pre>
+      <br />
+      <div id="demo-area"></div>
+      <pre id="console-area"></pre>
+
+      <script type="text/javascript">
+      pjs.defineModel("Model", function() {
+        this.books = [ { name: 'book1', pages: 10 } ];
+        
+        this.addBook = function() {
+          this.books.push({ name: 'test', pages: Math.round(Math.random()*100) });
+        };
+
+        this.sortBooks = function() {
+          this.books.sort(function(a, b) { return a.pages - b.pages; })
+        }
+
+        this.popBook = function() {
+          this.books.pop();
+        }
+      });
+
+      pjs.defineView("View", function(myModel) {
+        this._container = new pjs.element(
+          { tag: 'div', contains: { books: myModel }, forEach: function(book) {
+            return [ { tag: 'div', contains: [
+                       { tag: 'input', value: { name: book } },
+                       { tag: 'input', value: { pages: book} } 
+                      ] } ];
+          } }
+        );
+        
+        this._addButton = { tag: "input", type: "button", value: "Add", 
+                            click: { addBook: myModel } };
+
+        this._sortButton = { tag: "input", type: "button", value: "Sort", 
+                             click: { sortBooks: myModel } };
+
+        this._popButton = { tag: "input", type: "button", value: "Pop", 
+                            click: { popBook: myModel } };
+
+        this.append(this._container, this._addButton, 
+                    this._sortButton, this._popButton);
+      });
+
+      var demoModel = new pjs.model("Model");
+      var demoView = new pjs.view("View", demoModel);
+      document.getElementById("demo-area").appendChild(demoView.dom);
+
+      var consoleArea = document.getElementById("console-area");
+      setInterval(function() {
+        consoleArea.innerHTML = JSON.stringify(demoModel, null, 2);
+      }, 500);
+      </script>
+
+      <div style="clear: both">&nbsp;</div>
+
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-42700838-1', 'pajamajs.com');
+        ga('send', 'pageview');
+      </script>
+    </div>
+  </body>
+</html>
+
+
+
+
+

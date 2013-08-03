@@ -1,0 +1,132 @@
+
+#logo {
+  margin: 10px auto 0;
+  display: block;
+}
+
+#logo-quote {
+  font-style: italic;
+  font-size: 1.3em;
+  text-align: center;
+  margin-top: 15px;
+}
+
+hr {
+  color: #cccccc;
+  background-color: #cccccc;
+  height: 5px;
+  width: 80%;
+  border: 0;
+  margin-top: 35px;
+  margin-bottom: 30px;
+}
+
+h2 {
+  font-family: helvetica;
+  color: #333333;
+  padding-left: 10px;
+}
+
+#demo-area {
+  width: 42%;
+  float: left;
+  margin-left: 70px;
+  margin-top: 20px;
+}
+
+#console-area {
+  font-family: helvetica;
+  font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
+  float: left;
+  width: 35%;
+  border-left: 3px solid #BBBBBB;
+  padding-left: 25px;
+  background: #ffffff;
+}
+
+p {
+  font-family: helvetica;
+  font-weight: normal;
+  font-style: normal;
+  font-variant: normal;
+  font-size: 1.3125em;
+  line-height: 1.52381em;
+  color: #333333;
+  margin-left: 20px;
+  text-align: justify;
+}
+
+em {
+  color: #000000;
+}
+
+.small {
+  font-style: italic;
+  text-align: center;
+  margin-top:0;
+}
+
+#col {
+  width: 900px;
+  margin: 0 auto 100px;
+}
+
+pre {
+  margin: 0;
+  padding: 0;
+  background: #eee;
+  font-size: 1.3125em;
+  line-height: 1.52381em;
+  color: #333333;
+}
+
+#menu {
+  margin-top: 20px;
+  border-left: 2px solid gray;
+  border-right: 2px solid gray;
+  padding-bottom: 25px;
+}
+
+.menu-item {
+  display: block;
+  border: none;
+  outline: none;
+  float: left;
+  width: 149px;
+  padding: 10px 0;
+  text-align: center;
+  font-size: 1.3125em;
+  line-height: 1.52381em;
+  color: #333333;
+  text-decoration: none;
+  font-family: helvetica;
+  font-weight: bold;
+  font-style: normal;
+  font-variant: normal;
+}
+
+.menu-item:hover {
+  background: #e0e0e0;
+}
+
+#menu-bottom {
+  height: 2px;
+  background: gray;
+  clear: both;
+}
+
+.selected {
+  background: #f0f0f0;
+}
+
+.quote {
+  text-align: center;
+  width: 60%;
+  margin: 0 auto;
+}
+
+.code-highlight {
+  background: yellow;
+}
