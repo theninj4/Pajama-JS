@@ -61,7 +61,9 @@
 
   function startServer(options, routes) {
     var hostUrl = options.host+":"+options.port;
-    console.log("Starting pjs server on", hostUrl);
+    if (!options.nativeApp) {
+      console.log("Starting pjs server on", hostUrl);
+    }
     
     for (var i in routes) {
       routes[i].url = new RegExp("^"+routes[i].url.replace(/\//g, "\\/").replace(/\*/g, "([^\\/]{0,})"));
@@ -86,8 +88,13 @@
     io.enable('browser client etag');
     io.enable('browser client gzip');
     app.listen(options.port);
+    var connectionCount = 0;
 
     io.sockets.on('connection', function (socket) {
+      if (options.nativeApp && connectionCount) {
+        process.exit(0);
+      }
+      connectionCount++;
       var body = new PjsElement();
       body.dom = document.createElement("div");
 
@@ -148,8 +155,20 @@
       socket.on('disconnect', function() {
         body.clear();
         body = null;
+        if (options.nativeApp) {
+          process.exit(0);
+        }
       });
     });
+  };
+
+  function nativeApp(options, routes) {
+    startServer({ host: "localhost", port: 46240, nativeApp: true }, routes);
+    var args = [
+      '--app=http://localhost:46240'+(options.defaultPath || '/'),
+      '--app-window-size='+(options.width || 700)+','+(options.height || 500)
+    ];
+    require('child_process').spawn('google-chrome', args);
   };
 
 module.exports = {
@@ -158,5 +177,6 @@ module.exports = {
   element: PjsElement,
   model: mvc.model.__pjsCreate,
   view: mvc.view.__pjsCreate,
-  startServer: startServer
+  startServer: startServer,
+  nativeApp: nativeApp
 };

@@ -22,4 +22,6 @@ To run the serverside PajamaJS demo: `node demo/serverside/server.js` then brows
 
 To run the inverted PajamaJS demo: `node demo/inverted/server.js` then browse to `localhost:8080/index`
 
+To run the nativeApp demo: `./demo/native/sampleApp.js`
+
 After making any changes to the `src` folder: `make build`

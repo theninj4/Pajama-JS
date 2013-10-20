@@ -16,8 +16,10 @@ build:
 	cp dist/browser.pajama.js demo/clientside/
 	cp dist/node.pajama.js test/backend/
 	cp dist/node.pajama.js demo/inverted/
+	cp dist/node.pajama.js demo/native/
 	cp dist/node.pajama.js demo/serverside/
 	cp dist/browser.pajama.min.js website/
+	chmod 755 demo/native/sampleApp.js
 
 install:
 	npm install express socket.io uglify-js vows
