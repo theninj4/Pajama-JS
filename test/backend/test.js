@@ -232,7 +232,7 @@ vows.describe('Pajama.js').addBatch({
       assert.equal(elem.getValue(), "world", "Element should have value in model - world");
       assert.equal(model.property, "default", "Model should react to Element change - default");
     },
-    'Check pjs.element data bind with two binding value parameters': function() {
+    /*'Check pjs.element data bind with two binding value parameters': function() {
       var model = {
         a: 1,
         b: 2
@@ -243,7 +243,7 @@ vows.describe('Pajama.js').addBatch({
       assert.equal(model.a, model.b);
       model.b = 7;
       assert.equal(model.a, model.b);
-    },
+    },*/
     'Check pjs.element data bind with two binding function parameters': function() {
       var model = {
         result: 1,
@@ -351,6 +351,109 @@ vows.describe('Pajama.js').addBatch({
       assert.equal(children[0].getAttr("id"), 3, "Third child should be #3");
       assert.equal(children[1].getAttr("id"), 2, "Second child should be #2");
       assert.equal(children[2].getAttr("id"), 1, "First child should be #1");
+    },
+    'Check pjs triggerEvent + eventWaitAll': {
+      topic: function() {
+        var start = this.callback;
+        var total = 0;
+        var self = this;
+        var listener = pjs.eventWaitAll('test', function(data) {
+          total++;
+          assert.ok([1, 2].indexOf(total) !== -1);
+          if (total == 2) {
+            listener.terminate();
+            pjs.triggerEvent('test', 3);
+            setTimeout(function() {
+              start();
+            }, 10);
+          }
+        });
+
+        var listener2 = pjs.eventWaitAll('test', function(data) {
+          assert.equal(true, false);
+        });
+        listener2.terminate();
+        
+        pjs.triggerEvent('test', 1);
+        pjs.triggerEvent('test', 2);
+      },
+      'done': function() {
+        assert.ok(true);
+      }
+    },
+    'Check pjs triggerEvent + eventWaitOnce': {
+      topic: function() {
+        var start = this.callback;
+        var total = 0;
+        var self = this;
+        var listener = pjs.eventWaitOnce('test', function(data) {
+          total++;
+          assert.equal(total, 1);
+          pjs.triggerEvent('test', 3);
+          setTimeout(function() {
+            start();
+          }, 10);
+        });
+
+        var listener2 = pjs.eventWaitOnce('test', function(data) {
+          assert.equal(true, false);
+        });
+        listener2.terminate();
+        pjs.triggerEvent('test', 1);
+        pjs.triggerEvent('test', 2);
+      },
+      'done': function() {
+        assert.ok(true);
+      }
+    },
+    'Checking className binding 1': function() {
+      var model = {
+        prop1: 'class1',
+        prop2: 'class2'
+      };
+      var view = new pjs.element({ className: { prop1: model, prop2: model } });
+
+      assert.equal(model.prop1, 'class1');
+      assert.equal(model.prop2, 'class2');
+
+      assert.equal(view.hasClass("class1"), true, "Should have class1");
+      assert.equal(view.hasClass("class2"), true, "Should have class2");
+      model.prop1 = "";
+      assert.equal(view.hasClass("class1"), false, "Should not have class1");
+      assert.equal(view.hasClass("class2"), true, "Should have class2");
+      model.prop2 = "";
+      assert.equal(view.hasClass("class1"), false, "Should not have class1");
+      assert.equal(view.hasClass("class2"), false, "Should not have class2");
+      model.prop1 = "test"
+
+      assert.equal(model.prop1, 'test');
+      assert.equal(model.prop2, '');
+      assert.equal(view.hasClass("test"), true, "Should have test");
+      assert.equal(view.hasClass("class1"), false, "Should not have class1");
+      assert.equal(view.hasClass("class2"), false, "Should not have class2");
+    },
+    'Checking className binding 2': function() {
+      var model = {
+        prop1: 'class1'
+      };
+      var view1 = new pjs.element({ className: { prop1: model } });
+      var view2 = new pjs.element({ tag: 'input', type: 'text', value: { prop1: model } });
+
+      assert.equal(model.prop1, 'class1');
+      assert.equal(view1.hasClass("class1"), true, "Should have class1");
+      assert.equal(view2.getAttr('value'), 'class1', 'Should have value of class1');
+
+      model.prop1 = 'class2';
+      assert.equal(model.prop1, 'class2');
+      assert.equal(view1.hasClass("class1"), false, "Should not have class1");
+      assert.equal(view1.hasClass("class2"), true, "Should have class2");
+      assert.equal(view2.getAttr('value'), 'class2', 'Should have value of class2');
+
+      view2.setAttr('value', 'foobar');
+      view2.fireEvent("change");
+      assert.equal(model.prop1, 'foobar');
+      assert.equal(view1.hasClass("foobar"), true, "Should have foobar");
+      assert.equal(view2.getAttr('value'), 'foobar', 'Should have value of foobar');
     }
   }
 }).export(module);

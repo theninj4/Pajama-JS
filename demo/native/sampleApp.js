@@ -15,17 +15,8 @@ var mainController = function(body) {
   
 };
 
-var catchAll = function(body) {
-  var view = new pjs.view("ErrorView");
-  body.append(view);
-};
-
 pjs.nativeApp({
   width: 700,
   height: 500,
-  defaultPath: '/index'
-}, [
-  { url: '/index', controller: mainController },
-  { url: '/error', controller: catchAll },
-]);
-
+  main: mainController
+});

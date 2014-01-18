@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="qunit-1.12.0.css" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="screen.css" />
-    <title>Pajama.js - A serverside and clientside javascript templating engine</title>
+    <title>Pajama.js - a framework preferring simplicity and clarity</title>
   </head>
   <body>
     <a href="https://github.com/theninj4/Pajama-JS"><img style="position: absolute; top: 0; left: 0; border: 0;" src="fork-me.png" /></a>
@@ -19,62 +19,388 @@
 
       <img src="logo.png" id="logo" />
 
-      <div id="logo-quote">because HTML has no place in your Javascript app!</div>
+      <div id="logo-quote">a framework preferring simplicity and clarity</div>
 
       <div id="menu">
-        <a class="menu-item selected" href="index.html">Intro</a>
-        <a class="menu-item" href="usage.html">Usage</a>
+        <a class="menu-item selected" href="index.html">Usage</a>
+        <a class="menu-item" href="todo-mvc.html">Todo-MVC</a>
         <a class="menu-item" href="clientside.html">Clientside</a>
         <a class="menu-item" href="serverside.html">Serverside</a>
         <a class="menu-item" href="inverted.html">Inverted</a>
         <a class="menu-item" href="browsers.html">Browsers</a>
         <div id="menu-bottom"></div>
       </div>
-
-      <h2>TL;DR</h2>
       
-      <p>Consider this example running either clientside (on an existing page), serverside (think Airbnb's Render project) or client-server hybrid (using PajamaJS to sync up the clients DOM with the serverside view's in realtime):<p>
+      <h2>Routing and Controllers</h2>
+      
+      <p>The only markup in the entire project should be in index.html:</p>
+      <pre><code>
+      &lt;!doctype html>
+      &lt;html>
+        &lt;head>
+          &lt;script type="text/javascript" src="js/browser.pajama.js">&lt;/script>
+          &lt;script type="text/javascript" src="<span class="code-highlight">js/routes.js</span>">&lt;/script>
+          &lt;!-- css / font includes should go in here -->
+        &lt;/head>
+      &lt;/html>
+      </code></pre>
+
+      <p>The project kicks off in js/routes.js, it associates URLs with controllers:</p>
+      <pre><code>
+      window.onload = function() {
+        pjs.defineRoutes(document.body, [
+          { path: "", controller: "main" },                        // <-- page #1
+          <span class="code-highlight">{ path: "booking/*/lookup", controller: "viewBooking" }</span>, // <-- page #2
+          { path: "booking/*/edit", controller: "editBooking" },   // <-- page #3
+          /* more routes go here */
+        ]);
+      };
+      </code></pre>
+      
+      <p>The first parameter to defineRoutes is the DOM element to contain our app. The second parameter is an array of routes, with each route connecting a path to a controller.</p>
+
+      <br />
+
+      <p>Controller "main" for page #1, demonstrating how to move between pages:</p>
 
       <pre><code>
+      pjs.defineController("main", function(<span class="code-highlight">container</span>) {
+        // In 3 seconds, send us to the next page
+        setTimeout(function() {
+          <span class="code-highlight">pjs.route("booking/*/view", 1392);</span>
+        }, 3000);
+      });
+      </code></pre>
+
+      <p>Top level controllers are invoked with the top level DOM element abstracted away behind an instance of PjsElement.</p>
+
+      <br />
+
+      <p>Controller "viewBooking" for page #2, demonstrating a URL containing data:</p>
+      <pre><code>
+      // Asterisks in a route are read out of the url and passed into the controller
+      pjs.defineController(<span class="code-highlight">"viewBooking"</span>, function(container, <span class="code-highlight">bookingId</span>) {
+        console.log("bookingId is:", bookingId);
+        // In 3 seconds, send us to the next page
+        setTimeout(function() {
+          <span class="code-highlight">var bigObject = new Array(1024*1024);</span>
+          pjs.route("booking/*/edit", 1392, <span class="code-highlight">bigObject</span>);
+        }
+        }, 3000);
+      });
+      </code></pre>
+
+      <p>Controller "editBooking" for page #3, demonstrating a URL with additional big data:</p>
+      <pre><code>
+      // Additional parameters are also passed into the controller
+      pjs.defineController("editBooking", function(container, bookingId, <span class="code-highlight">bigObject</span>) {
+        console.log("bigObject is", bigObject);
+      });
+      </code></pre>
+
+      <p>Data passed around in the routing will persist through page reloads and browser navigation.</p>
+
+
+      <hr />
+
+      <h2>Data Binding and Reactive Views</h2>
+
+      <p>This is how we bind a model's value to an element's attribute:</p>
+      <pre><code>
+      <span class="code-highlight">myModel = { price: "1234567" };</span>
+      var elem = new pjs.element(
+        { tag: 'input', type: 'text', name: 'priceInput', <span class="code-highlight">value: { price: myModel }</span> }
+      );
+      container.append(elem);
+      </code></pre>
+      <p>Typing in the input box updates myModel. Changing myModel updates the input box.</p>
+     
+      <br />
+
+      <p>This is how we bind DOM events back to a function on the model:</p>
+      <pre><code>
+      <span class="code-highlight">var myModel = {</span>
+      <span class="code-highlight">  alert: function() { alert("This rocks!"); }</span>
+      <span class="code-highlight">};</span>
+      var elem = new pjs.element(
+        { tag: "input", type: "button", <span class="code-highlight">click: { alert: myModel }</span> }
+      );
+      container.append(elem);
+      </code></pre>
+      <p>When the <em>click</em> event fires on the button, the <em>alert</em> function on <em>myModel</em> will be invoked.</p>
+
+      <br />
+
+      <p>Taking things further, consider this example:</p>
+      <pre><code>
       var myModel = {
-        <span class="code-highlight">counter: 0</span>,
-        <span class="code-highlight">increment: function() { this.counter++; }</span>
+        counter: 0,
+        increment: function() { this.counter++; }
       };
       var elem = new pjs.element(
         { tag: "div", <span class="code-highlight">innerHTML: { counter: myModel }</span> },
         { tag: "input", type: "button", <span class="code-highlight">click: { increment: myModel }</span> }
       );
-      document.body.appendChild(elem.dom);
+      container.append(elem);
       </code></pre>
+      <p>Clicking the button updates the model, which in turn updates the view. Magic.</p>
 
-      <p>If that interests you (it should!) keep reading!</p>
+      <br />
+
+      <p>We can also bind arrays:</p>
+      <pre><code>
+      var myModel = {
+        <span class="code-highlight">books: [ { name: 'book1', pages: 168 } ]</span>
+      };
+      var elem = new pjs.element(
+        { tag: 'div', <span class="code-highlight">contains: { books: myModel }</span>, <span class="code-highlight">forEach: function(book) {</span>
+          return [ { tag: 'input', value: { name: book  } },
+                   { tag: 'input', value: { pages: book } } ];
+        <span class="code-highlight">}</span> }
+      );
+      container.append(elem);
+      </code></pre>
+      <p>Pushing a new object into myModel.books will invoke the forEach function, the result of which will be appended to the DOM. Updating the new myModel.books[1] will update the newly appended DOM elements. Typing in the new DOM elements will update the new object in myModel.books. Pop()'ing the new book from the array will remove it from the DOM. And so on.</p>
 
       <hr />
 
-      <h2>In a nutshell:</h2>
+      <h2>Other functions on pjs.element:</h2>
 
-      <p>pajama.js (pjs) is a serverside and clientside templating engine which makes use of model-view data bindings to remove all HTML from your Javascript project and generally help you to achieve awesomeness.</p>
+      <pre><code>
+      var elem = new pjs.element({ tag: 'input', type: 'text' });
+      elem.append( { tag: 'span' } );
+      elem.append( { tag: 'span' }, { tag: 'div' }, ... );
+      elem.append( [ { tag: 'span' }, ... ] );
+      elem.prepend( { tag: 'div' } );
+      elem.remove();
+      elem.clear();
+      elem.getValue();                // These five functions are great
+      elem.setValue('newValue');      // for writing tests on views!
+      elem.fireEvent('click');        // ..
+      elem.getAttr('className');      // ..
+      elem.setAttr('src', 'blah');    // ..
+      var children = elem.getNodes();         // returns: [ PjsElements ]
+      var html = elem.toMarkup();             // returns: string of static markup
+      document.body.appendChild(elem.dom);    // to insert elements into the DOM
+      </code></pre>
+
+
+      <hr/>
       
-      <p>This is what losing looks like:</p>
-      <pre><code>
-      &lt;input type="text" class="a b c" name="someInput" value="1234567" /&gt;
+      <h2>Using PajamaJS events:</h2>
 
-      &lt;div class="float-right"&gt;
-        &lt;span&gt;Total Price&lt;/span&gt;
-        &lt;input type="text" name="priceInput" value="0.00" /&gt;
-        &lt;span class="small-text"&gt;(in pence)&lt;/span&gt;
-      &lt;/div&gt;
-      </code></pre>
-      <p>and this is winning:</p>
-      <pre><code>
-      { tag: "input", type: "text", classes: ["a", "b", "c"], name: "someInput" }
+      <p>An event bus is provided to allow models and controllers to interact with each other without retaining object references.</p>
 
-      { tag: 'div', classes: ['float-right'], contains: [
-        { tag: 'span', text: 'Total Price:' },
-        { tag: 'input', type: 'text', name: 'priceInput', value: '0.00' },
-        { tag: 'span', classes: ['small-text'], text: '(in pence)' }
-      ] }
+      <pre><code>
+      pjs.defineController("EventReceiver", function(container) {
+        <span class="code-highlight">pjs.eventWaitAll</span>("HelloWorldEvent", function(data) {
+          console.log("HelloWorldEvent ->", data);
+          // pjs.route(...)
+        });
+        <span class="code-highlight">pjs.eventWaitOne</span>("HelloWorldEvent", function(data) {
+          console.log("HelloWorldEvent ->", data);
+        });
+      });
       </code></pre>
+      <br />
+      <pre><code>
+      pjs.defineModel("EventEmitter", function() {
+        this.submitForm = function() {
+          <span class="code-highlight">pjs.triggerEvent</span>("HelloWorldEvent", { foo: 'bar' } );
+          <span class="code-highlight">pjs.triggerEvent</span>("HelloWorldEvent", { foo: 'foo' } );
+        };
+      });
+      </code></pre>
+
+
+      <hr />
+
+      <h2>Using PajamaJS models:</h2>
+      
+      <pre><code>
+        <span class="code-highlight">pjs.defineModel</span>("ExampleModel", function(arg1, arg2) {
+          // Append everything to 'this'
+          this.number = 1;
+        });
+
+        var instance = new <span class="code-highlight">pjs.model</span>("ExampleModel", arg1, arg2);
+      </code></pre>
+
+      <hr />
+
+      <h2>Using PajamaJS views:</h2>
+      
+      <pre><code>
+        <span class="code-highlight">pjs.defineView</span>("ExampleView", function(arg1, arg2) {
+          // 'this' is an instance of pjs.element({ tag: 'div' })
+          this.append({ innerHTML: 'w00p' });
+          
+          // This is a nice shorthand to map an array of models into views:
+          this.append({ tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' });
+        });
+
+        var instance = new <span class="code-highlight">pjs.view</span>("ExampleView", arg1, arg2);
+        container.append(instance);
+      </code></pre>
+
+      <hr />
+
+      <h2>Using PajamaJS controllers:</h2>
+      
+      <pre><code>
+        <span class="code-highlight">pjs.defineController</span>("ExampleController", function(arg1, arg2) {
+          this.action = function() { };
+        });
+
+        var instance = new <span class="code-highlight">pjs.controller</span>("ExampleController", arg1, arg2);
+        instance.action();
+      </code></pre>
+
+      <hr />
+
+      <h2>Separating the functional from the presentational:</h2>
+
+      <pre><code>
+      pjs.defineView("SomeView", function(myModel) {
+
+        <span class="code-highlight">this._valueInput = { tag: 'input', value: { someValue: myModel } };</span>
+        <span class="code-highlight">this._submitButton = { tag: 'input', click: { someFunction: myModel } };</span>
+
+        this.append(
+          { id:'container', classes: ['content-box'], contains: [
+            { tag: 'img', src: 'images/flow.png' },
+            { tag: 'div', classes: ['float-right'], contains: [
+              { tag: 'span', text: 'Total Price:' },
+              <span class="code-highlight">this._valueInput,</span>
+              { tag: 'span', classes: ['small-text'], text: '(in pence)' }
+            ] },
+            { tag: 'div', classes: ['clear-right'], contains: [
+              <span class="code-highlight">this._submitButton</span>
+            ] }
+          ] }
+        );
+
+      });
+      </code></pre>
+      <p>Check out how we've separated the <em>functional</em> and <em>presentational</em> parts of the view!</p>
+      
+      <hr />
+
+      <h2>Putting it all together:</h2>
+
+      <pre><code>
+      &lt;!doctype html>
+      &lt;html>
+        &lt;head>
+          &lt;script type="text/javascript" src="js/browser.pajama.js">&lt;/script>
+        &lt;/head>
+      &lt;/html>
+      </code></pre>
+      <br />
+      <pre><code>
+      window.onload = function() {
+        pjs.defineRoutes(document.body, [
+          { path: "", controller: "main" }
+        ]);
+      };
+      </code></pre>
+      <br />
+      <pre><code>
+      pjs.defineController("main", function(container) {
+        var myModel = new pjs.model("LibraryModel");
+        var myView = new pjs.view("LibraryView", myModel);
+        container.append(myView);
+      });
+      </code></pre>
+      <br />
+      <pre><code>
+      pjs.defineModel("LibraryModel", function() {
+        this.name = "Default";
+        this.books = [ { name: 'brochure', pages: 10 }, 
+                       { name: 'poster',   pages: 1  } ];
+        this.addBook = function() {
+          this.books.push({ name: 'test', pages: Math.random()*100 });
+        };
+        this.sortBooks = function() {
+          this.books.sort(function(a, b) { return a.pages - b.pages; });
+        };
+        this.popBook = function() {
+          this.books.pop();
+        };
+      });
+      </code></pre>
+      <br />
+      <pre><code>
+      pjs.defineView("LibraryView", function(myModel) {
+        this._container = new pjs.element(
+          { tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' }
+        );
+        this._addButton = { tag: "input", type: "button", value: "Add", 
+                            click: { addBook: myModel } };
+        this._sortButton = { tag: "input", type: "button", value: "Sort", 
+                             click: { sortBooks: myModel } };
+        this._popButton = { tag: "input", type: "button", value: "Pop", 
+                            click: { popBook: myModel } };
+        this.append(this._container, this._addButton, 
+                    this._sortButton, this._popButton);
+      });
+
+      pjs.defineView("LibraryBook", function(book) {
+        this.append([ { tag: 'input', value: { name: book } },
+                      { tag: 'input', value: { pages: book} } ]);
+      });
+      </code></pre>
+      <br />
+      <div id="demo-area"></div>
+      <pre id="console-area"></pre>
+
+      <script type="text/javascript">
+      pjs.defineModel("LibraryModel", function() {
+        this.books = [ { name: 'book1', pages: 10 } ];
+        
+        this.addBook = function() {
+          this.books.push({ name: 'test', pages: Math.round(Math.random()*100) });
+        };
+
+        this.sortBooks = function() {
+          this.books.sort(function(a, b) { return a.pages - b.pages; })
+        }
+
+        this.popBook = function() {
+          this.books.pop();
+        }
+      });
+
+      pjs.defineView("LibraryView", function(myModel) {
+        this._container = new pjs.element(
+          { tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' }
+        );
+        this._addButton = { tag: "input", type: "button", value: "Add", 
+                            click: { addBook: myModel } };
+        this._sortButton = { tag: "input", type: "button", value: "Sort", 
+                             click: { sortBooks: myModel } };
+        this._popButton = { tag: "input", type: "button", value: "Pop", 
+                            click: { popBook: myModel } };
+        this.append(this._container, this._addButton, 
+                    this._sortButton, this._popButton);
+      });
+
+      pjs.defineView("LibraryBook", function(book) {
+        this.append([ { tag: 'input', value: { name: book } },
+                      { tag: 'input', value: { pages: book} } ]);
+      });
+
+      var demoModel = new pjs.model("LibraryModel");
+      var demoView = new pjs.view("LibraryView", demoModel);
+      document.getElementById("demo-area").appendChild(demoView.dom);
+
+      var consoleArea = document.getElementById("console-area");
+      setInterval(function() {
+        consoleArea.innerHTML = JSON.stringify(demoModel, null, 2);
+      }, 500);
+      </script>
+
+      <div style="clear: both">&nbsp;</div>
 
       <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -88,8 +414,3 @@
     </div>
   </body>
 </html>
-
-
-
-
-

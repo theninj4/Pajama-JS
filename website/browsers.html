@@ -10,7 +10,7 @@
     <link rel="stylesheet" type="text/css" href="qunit-1.12.0.css" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="screen.css" />
-    <title>Pajama.js - A serverside and clientside javascript templating engine</title>
+    <title>Pajama.js - a framework preferring simplicity and clarity</title>
   </head>
   <body>
     <a href="https://github.com/theninj4/Pajama-JS"><img style="position: absolute; top: 0; left: 0; border: 0;" src="fork-me.png" /></a>
@@ -19,11 +19,11 @@
 
       <img src="logo.png" id="logo" />
 
-      <div id="logo-quote">because HTML has no place in your Javascript app!</div>
+      <div id="logo-quote">a framework preferring simplicity and clarity</div>
 
       <div id="menu">
-        <a class="menu-item" href="index.html">Intro</a>
-        <a class="menu-item" href="usage.html">Usage</a>
+        <a class="menu-item" href="index.html">Usage</a>
+        <a class="menu-item" href="todo-mvc.html">Todo-MVC</a>
         <a class="menu-item" href="clientside.html">Clientside</a>
         <a class="menu-item" href="serverside.html">Serverside</a>
         <a class="menu-item" href="inverted.html">Inverted</a>
@@ -290,7 +290,7 @@
           equal(elem.getValue(), "world", "Element should have value in model - world");
           equal(model.property, "default", "Model should react to Element change - default");
         });
-
+        /*
         test('Check pjs.element data bind with two binding value parameters', function() {
           var model = {
             a: 1,
@@ -303,7 +303,7 @@
           model.b = 7;
           equal(model.a, model.b);
         });
-
+        */
         test('Check pjs.element data bind with two binding function parameters', function() {
           var model = {
             result: 1,
@@ -417,6 +417,49 @@
           equal(children[2].getAttr("id"), 1, "First child should be #1");
         });
         
+        asyncTest('Check pjs triggerEvent + eventWaitAll', function() {
+          var total = 0;
+          var self = this;
+          var listener = pjs.eventWaitAll('test', function(data) {
+            total++;
+            equal([1, 2].indexOf(total) !== -1, true);
+            if (total == 2) {
+              listener.terminate();
+              pjs.triggerEvent('test', 3);
+              setTimeout(function() {
+                start();
+              }, 10);
+            }
+          });
+
+          var listener2 = pjs.eventWaitAll('test', function(data) {
+            equal(true, false);
+          });
+          listener2.terminate();
+          
+          pjs.triggerEvent('test', 1);
+          pjs.triggerEvent('test', 2);
+        });
+
+        asyncTest('Check pjs triggerEvent + eventWaitOnce', function() {
+          var total = 0;
+          var self = this;
+          var listener = pjs.eventWaitOnce('test', function(data) {
+            total++;
+            equal(total, 1);
+            pjs.triggerEvent('test', 3);
+            setTimeout(function() {
+              start();
+            }, 10);
+          });
+
+          var listener2 = pjs.eventWaitOnce('test', function(data) {
+            equal(true, false);
+          });
+          listener2.terminate();
+          pjs.triggerEvent('test', 1);
+          pjs.triggerEvent('test', 2);
+        });
       </script>
 
       <script>

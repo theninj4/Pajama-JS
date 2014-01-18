@@ -92,21 +92,20 @@
         this.type = type;
       }
     };
-  };  var require = require || null;
-
+  };
   function PjsDataBindingRequest(data) {
     for (var i in data) {
       this[i] = data[i];
     }
-  };
+  }
 
   function PjsBindProperty(model, bind, attr, element) {
-    if (!model.hasOwnProperty(bind)) {
+    if (model[bind] == undefined) {
       model[bind] = "";
     }
     if (model[bind] instanceof Function) {
       var bindingFunction = function(e) { 
-        model[bind].call(model, element.getAttr(attr), e); 
+        model[bind].call(model, e); 
       };
       element.garbage.push(function() {
         element.removeEvent(attr, bindingFunction);
@@ -121,7 +120,7 @@
       
       Object.defineProperty(model, bind, {
         get: function() {
-          return authoritativeElement.getAttr(attr);
+          return value; //authoritativeElement.getAttr(attr);
         },
         set: function(newValue) {
           if (newValue instanceof PjsDataBindingRequest) {
@@ -135,6 +134,11 @@
                 model[bind] = newValue.element.getAttr(newValue.attr);
               }
             };
+
+            if (newValue.attr instanceof Function) {
+              bindingFunction = newValue.attr;
+              bindingEvent = function() { };
+            } 
 
             element.garbage.push(function() {
               authoritativeElement = null;
@@ -166,7 +170,7 @@
       element: element, 
       attr: attr
     });
-  };
+  }
 
   function PjsBindArray(model, bind, element, func) {
     if (!model.hasOwnProperty(bind)) {
@@ -263,12 +267,13 @@
       element: element, 
       func: func
     });
-  };
+  }
 
   var elemCount = 0;
   function PjsElement(data) {
     if (!data) data = {};
     if (!data.tag) data.tag = "div";
+    var i;
     var elem = document.createElement(data.tag);
     var self = this;
     self.dom = elem;
@@ -312,23 +317,23 @@
       self.recycle();
     };
     self.recycle = function() {
-      var children = self.getNodes();
-      for (var i=0; i<children.length; i++) {
+      var i, children = self.getNodes();
+      for (i=0; i<children.length; i++) {
         children[i].recycle();
       }
-      for (var i=0; i<self.garbage.length; i++) {
+      for (i=0; i<self.garbage.length; i++) {
         self.garbage[i]();
       }
     };
     self.addClass = function(name) { 
-      if (name != "") {
+      if (name !== "") {
         //self.dom.classList.add(name);
         self.dom.className = self.dom.className || "";
         self.dom.className += " "+name;
       }
     };
     self.removeClass = function(name) { 
-      if (name != "") {
+      if (name !== "") {
         //self.dom.classList.remove(name); 
         self.dom.className = (" "+self.dom.className+" ").replace(" "+name+" ", "");
       }
@@ -342,8 +347,8 @@
         self.dom[attr] = value; self.dom.setAttribute(attr, value); 
         if (require) self.fireEvent("PjsChange", { type: "attr", id: self.uuid, attr: attr, value: value });
       }
-    }
-    self.getAttr = function(name) { return self.dom[name]; }
+    };
+    self.getAttr = function(name) { return self.dom[name]; };
     self.addEvent = function(name, callback) {
       self.dom.addEventListener(name, callback);
       if (self.eventList.indexOf(name) == -1) self.eventList.push(name);
@@ -368,7 +373,7 @@
       }
       if (require) self.fireEvent("PjsChange", { type: "clear", parent: self.uuid });
       return self;
-    }
+    };
     self.fireEvent = function(name, detail) {
       var tmp = document.createEvent("HTMLEvents");
       tmp.initEvent(name, true, true );
@@ -409,7 +414,7 @@
         }
       }
       if (inverted) {
-        markup += " id='"+self.uuid+"'"
+        markup += " id='"+self.uuid+"'";
         for (var e in self.eventList) {
           var eventName = self.eventList[e];
           markup += ' on'+eventName+'="dispatch(\''+self.uuid+'\', \''+eventName+'\', event)" ';
@@ -426,7 +431,7 @@
     };
 
     if (data.classes) {
-      for (var i=0; i<data.classes.length; i++) {
+      for (i=0; i<data.classes.length; i++) {
         self.addClass(data.classes[i]);
       }
     }
@@ -435,57 +440,136 @@
       if ((items instanceof Object) && (Object.keys(items).length==1) && (data.forEach)) {
         var key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, data.forEach);
+      } else if ((items instanceof Object) && (Object.keys(items).length==1) && (data.usingView)) {
+        var key = Object.keys(items)[0];
+        PjsBindArray(items[key], key, self, function(someItem) {
+          mvc.view[data.usingView].apply(self, [ someItem ]);
+        });
       } else {
         if (!(items instanceof Array)) items = [ items ];
-        for (var i=0; i<items.length; i++) {
+        for (i=0; i<items.length; i++) {
           self.append(items[i]);
         }
       }
-    };
-    for (var i in data) {
-      if ( (i!='classes') && (i!='contains') && (i!='tag') && (i!='forEach') ) {
-        var attrValue = data[i];
-        if (attrValue instanceof Object) {
-          var bindingItems = Object.keys(attrValue);
+    }
+    if (data.className) {
+      Object.keys(data.className).forEach(function(propertyName) { 
+        var oldValue = data.className[propertyName][propertyName];
+        self.addClass(oldValue);
+        PjsBindProperty(data.className[propertyName], propertyName, function(value) {
+          if (value != oldValue) {
+            self.removeClass(oldValue);
+            self.addClass(value);
+            oldValue = value;
+          }
+        }, self);
+      });
+    }
+    for (i in data) {
+      if (['classes','contains','tag','forEach','className'].indexOf(i) === -1) {
+        var val = data[i];
+        if (val instanceof Object) {
+          var bindingItems = Object.keys(val);
           for (var j=0; j<bindingItems.length; j++) {
             var prop = bindingItems[j];
-            PjsBindProperty(attrValue[prop], prop, i, self);
+            PjsBindProperty(val[prop], prop, i, self);
           }
         } else {
           self.setAttr(i, data[i]);
         }
       }
     }
-  };  
+  }
 
-  var mvc = { };
-  var bits = ['model', 'view'];
-  for (var i=0; i<bits.length; i++) {
-    (function(type) {
-      mvc[type] = {
-        __pjsDefine: function(name, definition) {
-          if (mvc[type].hasOwnProperty(name)) {
-            console.log("Duplicate definition found for "+type, name);
-            return; 
-          }
-          mvc[type][name] = definition;
-        },
-        __pjsCreate: function(name, args) {
-          if (!mvc[type].hasOwnProperty(name)) {
-            console.error("Dynamic script loader failed to find "+type+":", name);
-            return null;
-          }
-          var args = Array.prototype.slice.call(arguments);
-          args.shift();
-          var newObj = { };
-          if (type == "view") newObj = new PjsElement({ classes: [ 'view.'+name ] });
-        
-          mvc[type][name].apply(newObj, args);
-          return newObj;
+  var tempEventQueue = {};
+  var longEventQueue = {};
+
+  function triggerEvent(event, obj) {
+    var hitCount=0;
+    if (tempEventQueue.hasOwnProperty(event)) {
+      var processable = tempEventQueue[event];
+      tempEventQueue[event] = [];
+      processable.forEach(function(callback) {
+        setTimeout(function() { callback(obj); }, 0);
+      });
+    }
+    if (longEventQueue.hasOwnProperty(event)) {
+      longEventQueue[event].forEach(function(callback) {
+        setTimeout(function() { callback(obj); }, 0);
+      });
+    }
+    //if (hitCount==0) console.warn("Unhandled event dispatched", event, obj, (new Error()).stack);
+  }
+
+  function eventWaitAll(event, callback) {
+    if (!longEventQueue.hasOwnProperty(event)) {
+      longEventQueue[event] = [];
+    }
+    longEventQueue[event].push(callback);
+
+    return {
+      terminate: function() {
+        var i = longEventQueue[event].indexOf(callback);
+        if (i >= 0) {
+          longEventQueue[event].splice(i, 1);
         }
       }
-    })(bits[i]);
-  };  var bootstrapper = function() {
+    };
+  }
+
+  function eventWaitOnce(event, callback) {
+    if (!tempEventQueue.hasOwnProperty(event)) {
+      tempEventQueue[event] = [];
+    }
+    tempEventQueue[event].push(callback);
+
+    return {
+      terminate: function() {
+        var i = tempEventQueue[event].indexOf(callback);
+        if (i >= 0) {
+          tempEventQueue[event].splice(i, 1);
+        }
+      }
+    };
+  }
+  
+  function clearAllEvents() {
+    tempEventQueue = {};
+    longEventQueue = {};
+  }
+
+  var mvc = { };
+  var bits = ['model', 'view', 'controller'];
+  bits.forEach(function(type) {
+    mvc[type] = {
+      __pjsDefine: function(name, definition) {
+        if (mvc[type].hasOwnProperty(name)) {
+          console.log("Duplicate definition found for "+type, name);
+          return; 
+        }
+        mvc[type][name] = definition;
+      },
+      __pjsCreate: function(name) {
+        if (!mvc[type].hasOwnProperty(name)) {
+          console.error("Dynamic script loader failed to find "+type+":", name);
+          return null;
+        }
+        
+        var args = Array.prototype.slice.call(arguments);
+        args.shift();
+        var constructor = mvc[type][name];
+
+        if (type == "view") {
+          var newObj = new PjsElement({ classes: [ 'view.'+name ] });
+          constructor.apply(newObj, args);
+          return newObj;
+        }
+        args.unshift(null);
+        return new (constructor.bind.apply(constructor, args))();
+      }
+    };
+  });
+  var bootstrapper = function() {
     var socket = io.connect('http://---');
 
     socket.on('fullPage', function (newMarkup) {
@@ -620,7 +704,7 @@
 
       socket.on('sync', function() {
         socket.emit('fullPage', body.toMarkup(true));
-      })
+      });
 
       socket.on('action', function(data) {
         if (!data || !data.id || !data.type || !(data.value || data.content)) {
@@ -647,23 +731,36 @@
         }
       });
     });
-  };
+  }
 
   function nativeApp(options, routes) {
-    startServer({ host: "localhost", port: 46240, nativeApp: true }, routes);
+    startServer({ 
+      host: "localhost", 
+      port: 46240, 
+      nativeApp: true,
+    }, [ { url: '/nativeApp', controller: options.main } ]);
     var args = [
-      '--app=http://localhost:46240'+(options.defaultPath || '/'),
-      '--app-window-size='+(options.width || 700)+','+(options.height || 500)
+      '--app=http://localhost:46240/nativeApp',
+      '--app-window-size='+(options.width || 700)+','+(options.height || 500),
+      '--user-data-dir=./tmp'
     ];
     require('child_process').spawn('google-chrome', args);
-  };
+  }
 
-module.exports = {
-  defineModel: mvc.model.__pjsDefine,
-  defineView: mvc.view.__pjsDefine,
-  element: PjsElement,
-  model: mvc.model.__pjsCreate,
-  view: mvc.view.__pjsCreate,
-  startServer: startServer,
-  nativeApp: nativeApp
-};
+  module.exports = {
+    startServer: startServer,
+    nativeApp: nativeApp,
+
+    defineModel: mvc.model.__pjsDefine,
+    defineView: mvc.view.__pjsDefine,
+    defineController: mvc.controller.__pjsDefine,
+
+    element: PjsElement,
+    model: mvc.model.__pjsCreate,
+    view: mvc.view.__pjsCreate,
+    controller: mvc.controller.__pjsCreate,
+
+    eventWaitAll: eventWaitAll,
+    eventWaitOnce: eventWaitOnce,
+    triggerEvent: triggerEvent,
+  };

@@ -260,18 +260,21 @@
       equal(model.property, "default", "Model should react to Element change - default");
     });
 
-    test('Check pjs.element data bind with two binding value parameters', function() {
+    /*test('Check pjs.element data bind with two binding value parameters', function() {
       var model = {
         a: 1,
         b: 2
-      }
+      };
       var elem = new pjs.element({ tag: 'input', test: { a: model, b: model }});
+      equal(elem.getAttr('test'), 2);
       equal(model.a, model.b);
       model.a = 9;
       equal(model.a, model.b);
+      equal(elem.getAttr('test'), 9);
       model.b = 7;
       equal(model.a, model.b);
-    });
+      equal(elem.getAttr('test'), 9);
+    });*/
 
     test('Check pjs.element data bind with two binding function parameters', function() {
       var model = {
@@ -384,6 +387,101 @@
       equal(children[0].getAttr("id"), 3, "Third child should be #3");
       equal(children[1].getAttr("id"), 2, "Second child should be #2");
       equal(children[2].getAttr("id"), 1, "First child should be #1");
+    });
+ 
+    asyncTest('Check pjs triggerEvent + eventWaitAll', function() {
+      var total = 0;
+      var self = this;
+      var listener = pjs.eventWaitAll('test', function(data) {
+        total++;
+        equal([1, 2].indexOf(total) !== -1, true);
+        if (total == 2) {
+          listener.terminate();
+          pjs.triggerEvent('test', 3);
+          setTimeout(function() {
+            start();
+          }, 10);
+        }
+      });
+
+      var listener2 = pjs.eventWaitAll('test', function(data) {
+        equal(true, false);
+      });
+      listener2.terminate();
+      
+      pjs.triggerEvent('test', 1);
+      pjs.triggerEvent('test', 2);
+    });
+
+    asyncTest('Check pjs triggerEvent + eventWaitOnce', function() {
+      var total = 0;
+      var self = this;
+      var listener = pjs.eventWaitOnce('test', function(data) {
+        total++;
+        equal(total, 1);
+        pjs.triggerEvent('test', 3);
+        setTimeout(function() {
+          start();
+        }, 10);
+      });
+
+      var listener2 = pjs.eventWaitOnce('test', function(data) {
+        equal(true, false);
+      });
+      listener2.terminate();
+      pjs.triggerEvent('test', 1);
+      pjs.triggerEvent('test', 2);
+    });
+
+    test('Checking className binding 1', function() {
+      var model = {
+        prop1: 'class1',
+        prop2: 'class2'
+      };
+      var view = new pjs.element({ className: { prop1: model, prop2: model } });
+
+      equal(model.prop1, 'class1');
+      equal(model.prop2, 'class2');
+
+      equal(view.hasClass("class1"), true, "Should have class1");
+      equal(view.hasClass("class2"), true, "Should have class2");
+      model.prop1 = "";
+      equal(view.hasClass("class1"), false, "Should not have class1");
+      equal(view.hasClass("class2"), true, "Should have class2");
+      model.prop2 = "";
+      equal(view.hasClass("class1"), false, "Should not have class1");
+      equal(view.hasClass("class2"), false, "Should not have class2");
+      model.prop1 = "test"
+
+      equal(model.prop1, 'test');
+      equal(model.prop2, '');
+      equal(view.hasClass("test"), true, "Should have test");
+      equal(view.hasClass("class1"), false, "Should not have class1");
+      equal(view.hasClass("class2"), false, "Should not have class2");
+    });
+
+    test('Checking className binding 2', function() {
+      var model = {
+        prop1: 'class1'
+      };
+      var view1 = new pjs.element({ className: { prop1: model } });
+      var view2 = new pjs.element({ tag: 'input', type: 'text', value: { prop1: model } });
+
+      equal(model.prop1, 'class1');
+      equal(view1.hasClass("class1"), true, "Should have class1");
+      equal(view2.getAttr('value'), 'class1', 'Should have value of class1');
+
+      model.prop1 = 'class2';
+      equal(model.prop1, 'class2');
+      equal(view1.hasClass("class1"), false, "Should not have class1");
+      equal(view1.hasClass("class2"), true, "Should have class2");
+      equal(view2.getAttr('value'), 'class2', 'Should have value of class2');
+
+      view2.setAttr('value', 'foobar');
+      view2.fireEvent("change");
+      equal(model.prop1, 'foobar');
+      equal(view1.hasClass("foobar"), true, "Should have foobar");
+      equal(view2.getAttr('value'), 'foobar', 'Should have value of foobar');
     });
 
   </script>

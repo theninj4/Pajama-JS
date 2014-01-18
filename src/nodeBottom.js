@@ -133,7 +133,7 @@
 
       socket.on('sync', function() {
         socket.emit('fullPage', body.toMarkup(true));
-      })
+      });
 
       socket.on('action', function(data) {
         if (!data || !data.id || !data.type || !(data.value || data.content)) {
@@ -160,23 +160,36 @@
         }
       });
     });
-  };
+  }
 
   function nativeApp(options, routes) {
-    startServer({ host: "localhost", port: 46240, nativeApp: true }, routes);
+    startServer({ 
+      host: "localhost", 
+      port: 46240, 
+      nativeApp: true,
+    }, [ { url: '/nativeApp', controller: options.main } ]);
     var args = [
-      '--app=http://localhost:46240'+(options.defaultPath || '/'),
-      '--app-window-size='+(options.width || 700)+','+(options.height || 500)
+      '--app=http://localhost:46240/nativeApp',
+      '--app-window-size='+(options.width || 700)+','+(options.height || 500),
+      '--user-data-dir=./tmp'
     ];
     require('child_process').spawn('google-chrome', args);
-  };
+  }
 
-module.exports = {
-  defineModel: mvc.model.__pjsDefine,
-  defineView: mvc.view.__pjsDefine,
-  element: PjsElement,
-  model: mvc.model.__pjsCreate,
-  view: mvc.view.__pjsCreate,
-  startServer: startServer,
-  nativeApp: nativeApp
-};
+  module.exports = {
+    startServer: startServer,
+    nativeApp: nativeApp,
+
+    defineModel: mvc.model.__pjsDefine,
+    defineView: mvc.view.__pjsDefine,
+    defineController: mvc.controller.__pjsDefine,
+
+    element: PjsElement,
+    model: mvc.model.__pjsCreate,
+    view: mvc.view.__pjsCreate,
+    controller: mvc.controller.__pjsCreate,
+
+    eventWaitAll: eventWaitAll,
+    eventWaitOnce: eventWaitOnce,
+    triggerEvent: triggerEvent,
+  };
