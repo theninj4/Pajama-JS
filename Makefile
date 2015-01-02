@@ -5,22 +5,22 @@ build:
 	    src/main-*.js \
 	    src/jsBottom.js \
 	     > dist/browser.pajama.js
-	uglifyjs dist/browser.pajama.js -m > dist/browser.pajama.min.js
 	cat \
 	    src/nodeTop.js \
 	    src/main-*.js \
 	    src/nodeBottom.js \
 	     > dist/node.pajama.js
-	uglifyjs dist/node.pajama.js -m > dist/node.pajama.min.js
 	cp dist/browser.pajama.js test/frontend/
 	cp dist/browser.pajama.js demo/clientside/
 	cp dist/node.pajama.js test/backend/
 	cp dist/node.pajama.js demo/inverted/
 	cp dist/node.pajama.js demo/native/
 	cp dist/node.pajama.js demo/serverside/
-	cp dist/browser.pajama.min.js website/
+	cp dist/browser.pajama.js website/js/
 	cp dist/browser.pajama.js website/todo-mvc/
 	chmod 755 demo/native/sampleApp.js
+	uglifyjs dist/browser.pajama.js -m > dist/browser.pajama.min.js
+	uglifyjs dist/node.pajama.js -m > dist/node.pajama.min.js
 
 install:
 	npm install express socket.io uglify-js vows

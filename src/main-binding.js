@@ -104,7 +104,8 @@
               var returnValue = value.push.apply(value, Array.prototype.slice.call(arguments));
               for (var i=0; i<bindingList.length; i++) {
                 var bindingItem = bindingList[i];
-                bindingItem.func.call({ }, arguments[0]);
+                var result = bindingItem.func.call({ }, arguments[0]);
+                if (result) bindingItem.element.append(result);
               }
               return returnValue;
             }
@@ -145,7 +146,8 @@
               var returnValue = value.unshift.apply(value, Array.prototype.slice.call(arguments));
               for (var i=0; i<bindingList.length; i++) {
                 var bindingItem = bindingList[i];
-                bindingItem.func.call({ }, arguments[0]);
+                var result = bindingItem.func.call({ }, arguments[0]);
+                if (result) bindingItem.element.prepend(result);
               }
               return returnValue;
             }
@@ -162,7 +164,8 @@
             var bindingItem = bindingList[i];
             bindingItem.element.clear();
             for (var item in value) {
-              bindingItem.func.call({ }, model[bind][item]);
+              var result = bindingItem.func.call({ }, model[bind][item]);
+              if (result) bindingItem.element.append(result);
             }
           }
         },

@@ -1,0 +1,82 @@
+
+body {
+  font-family: helvetica;
+  position: relative;
+}
+
+h2 ~ h2 {
+  border-top: 1px solid #ddd;
+  padding-top: 35px;
+  margin-top: 30px;
+}
+h3 {
+  padding-top: 15px;
+}
+
+
+#nav-menu {
+  top: 10px;
+}
+.nav>li a {
+  border-left: 3px solid #fff;
+  padding: 6px 15px;
+}
+.nav>li.active>a {
+  border-left: 3px solid #ccc;
+}
+
+.nav>li .nav {
+  transition: all 0.2s;
+  max-height: 0;
+  overflow: hidden;
+}
+.nav>li.active .nav {
+  max-height: 300px;
+}
+.nav .nav a {
+  padding: 0px 15px 0px 30px;
+  margin: 4px 0;
+}
+
+dl.dl-horizontal > * {
+  padding: 3px 0;
+}
+
+#qunit-testrunner-toolbar, #qunit-header, #qunit-banner {
+  display: none;
+}
+
+#demo-area input {
+  margin: 3px;
+}
+#demo-area input:not([type]) {
+  width: 47%;
+  display: inline;
+}
+
+/* 009999 003333 001A1A 00E6E6 */
+/* FF8000 */
+
+
+/* bootstrap callouts */
+/* https://gist.github.com/matthiasg/6153853 */
+
+.bs-callout {
+  margin: 20px 0;
+  padding: 15px 30px 15px 15px;
+  border: 1px solid #eee;
+  border-left: 5px solid #5bc0de;
+}
+.bs-callout h4 {
+  margin-top: 0;
+  color: #5bc0de;
+}
+.bs-callout p:last-child {
+  margin-bottom: 0;
+}
+.bs-callout code,
+.bs-callout .highlight {
+  background-color: #fff;
+}
+
+

@@ -1,420 +1,832 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
-    <script src="browser.pajama.min.js"></script>
-  
-    <script src="es5-shim.js"></script>
-    <script src="es5-sham.js"></script>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pajama.js - a thought provoking Javascript experiment</title>
+    <script src="js/browser.pajama.js"></script>
+    
+    <script src="js/qunit-1.12.0.js"></script>
+    <link href="css/qunit-1.12.0.css" rel="stylesheet" />
 
-    <script src="qunit-1.12.0.js"></script>
-    <link rel="stylesheet" type="text/css" href="qunit-1.12.0.css" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/prism.css" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" media="screen" href="screen.css" />
-    <title>Pajama.js - a framework preferring simplicity and clarity</title>
+    <link href="css/screen.css" rel="stylesheet" />
+    
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!--[if lt IE 10]>
+      <script src="js/es5-shim.js"></script>
+      <script src="js/es5-sham.js"></script>
+    <![endif]-->
   </head>
   <body>
-    <a href="https://github.com/theninj4/Pajama-JS"><img style="position: absolute; top: 0; left: 0; border: 0;" src="fork-me.png" /></a>
-
-    <div id="col">
-
-      <img src="logo.png" id="logo" />
-
-      <div id="logo-quote">a framework preferring simplicity and clarity</div>
-
-      <div id="menu">
-        <a class="menu-item selected" href="index.html">Usage</a>
-        <a class="menu-item" href="todo-mvc.html">Todo-MVC</a>
-        <a class="menu-item" href="clientside.html">Clientside</a>
-        <a class="menu-item" href="serverside.html">Serverside</a>
-        <a class="menu-item" href="inverted.html">Inverted</a>
-        <a class="menu-item" href="browsers.html">Browsers</a>
-        <div id="menu-bottom"></div>
+    <div class="jumbotron">
+      <div class="container">
+        <h1><img src="img/logo.png" /></h1>
+        <p>a thought provoking Javascript experiment.</p>
       </div>
-      
-      <h2>Routing and Controllers</h2>
-      
-      <p>The only markup in the entire project should be in index.html:</p>
-      <pre><code>
-      &lt;!doctype html>
-      &lt;html>
-        &lt;head>
-          &lt;script type="text/javascript" src="js/browser.pajama.js">&lt;/script>
-          &lt;script type="text/javascript" src="<span class="code-highlight">js/routes.js</span>">&lt;/script>
-          &lt;!-- css / font includes should go in here -->
-        &lt;/head>
-      &lt;/html>
-      </code></pre>
-
-      <p>The project kicks off in js/routes.js, it associates URLs with controllers:</p>
-      <pre><code>
-      window.onload = function() {
-        pjs.defineRoutes(document.body, [
-          { path: "", controller: "main" },                        // <-- page #1
-          <span class="code-highlight">{ path: "booking/*/lookup", controller: "viewBooking" }</span>, // <-- page #2
-          { path: "booking/*/edit", controller: "editBooking" },   // <-- page #3
-          /* more routes go here */
-        ]);
-      };
-      </code></pre>
-      
-      <p>The first parameter to defineRoutes is the DOM element to contain our app. The second parameter is an array of routes, with each route connecting a path to a controller.</p>
-
-      <br />
-
-      <p>Controller "main" for page #1, demonstrating how to move between pages:</p>
-
-      <pre><code>
-      pjs.defineController("main", function(<span class="code-highlight">container</span>) {
-        // In 3 seconds, send us to the next page
-        setTimeout(function() {
-          <span class="code-highlight">pjs.route("booking/*/view", 1392);</span>
-        }, 3000);
-      });
-      </code></pre>
-
-      <p>Top level controllers are invoked with the top level DOM element abstracted away behind an instance of PjsElement.</p>
-
-      <br />
-
-      <p>Controller "viewBooking" for page #2, demonstrating a URL containing data:</p>
-      <pre><code>
-      // Asterisks in a route are read out of the url and passed into the controller
-      pjs.defineController(<span class="code-highlight">"viewBooking"</span>, function(container, <span class="code-highlight">bookingId</span>) {
-        console.log("bookingId is:", bookingId);
-        // In 3 seconds, send us to the next page
-        setTimeout(function() {
-          <span class="code-highlight">var bigObject = new Array(1024*1024);</span>
-          pjs.route("booking/*/edit", 1392, <span class="code-highlight">bigObject</span>);
-        }
-        }, 3000);
-      });
-      </code></pre>
-
-      <p>Controller "editBooking" for page #3, demonstrating a URL with additional big data:</p>
-      <pre><code>
-      // Additional parameters are also passed into the controller
-      pjs.defineController("editBooking", function(container, bookingId, <span class="code-highlight">bigObject</span>) {
-        console.log("bigObject is", bigObject);
-      });
-      </code></pre>
-
-      <p>Data passed around in the routing will persist through page reloads and browser navigation.</p>
-
-
-      <hr />
-
-      <h2>Data Binding and Reactive Views</h2>
-
-      <p>This is how we bind a model's value to an element's attribute:</p>
-      <pre><code>
-      <span class="code-highlight">myModel = { price: "1234567" };</span>
-      var elem = new pjs.element(
-        { tag: 'input', type: 'text', name: 'priceInput', <span class="code-highlight">value: { price: myModel }</span> }
-      );
-      container.append(elem);
-      </code></pre>
-      <p>Typing in the input box updates myModel. Changing myModel updates the input box.</p>
-     
-      <br />
-
-      <p>This is how we bind DOM events back to a function on the model:</p>
-      <pre><code>
-      <span class="code-highlight">var myModel = {</span>
-      <span class="code-highlight">  alert: function() { alert("This rocks!"); }</span>
-      <span class="code-highlight">};</span>
-      var elem = new pjs.element(
-        { tag: "input", type: "button", <span class="code-highlight">click: { alert: myModel }</span> }
-      );
-      container.append(elem);
-      </code></pre>
-      <p>When the <em>click</em> event fires on the button, the <em>alert</em> function on <em>myModel</em> will be invoked.</p>
-
-      <br />
-
-      <p>Taking things further, consider this example:</p>
-      <pre><code>
-      var myModel = {
-        counter: 0,
-        increment: function() { this.counter++; }
-      };
-      var elem = new pjs.element(
-        { tag: "div", <span class="code-highlight">innerHTML: { counter: myModel }</span> },
-        { tag: "input", type: "button", <span class="code-highlight">click: { increment: myModel }</span> }
-      );
-      container.append(elem);
-      </code></pre>
-      <p>Clicking the button updates the model, which in turn updates the view. Magic.</p>
-
-      <br />
-
-      <p>We can also bind arrays:</p>
-      <pre><code>
-      var myModel = {
-        <span class="code-highlight">books: [ { name: 'book1', pages: 168 } ]</span>
-      };
-      var elem = new pjs.element(
-        { tag: 'div', <span class="code-highlight">contains: { books: myModel }</span>, <span class="code-highlight">forEach: function(book) {</span>
-          return [ { tag: 'input', value: { name: book  } },
-                   { tag: 'input', value: { pages: book } } ];
-        <span class="code-highlight">}</span> }
-      );
-      container.append(elem);
-      </code></pre>
-      <p>Pushing a new object into myModel.books will invoke the forEach function, the result of which will be appended to the DOM. Updating the new myModel.books[1] will update the newly appended DOM elements. Typing in the new DOM elements will update the new object in myModel.books. Pop()'ing the new book from the array will remove it from the DOM. And so on.</p>
-
-      <hr />
-
-      <h2>Other functions on pjs.element:</h2>
-
-      <pre><code>
-      var elem = new pjs.element({ tag: 'input', type: 'text' });
-      elem.append( { tag: 'span' } );
-      elem.append( { tag: 'span' }, { tag: 'div' }, ... );
-      elem.append( [ { tag: 'span' }, ... ] );
-      elem.prepend( { tag: 'div' } );
-      elem.remove();
-      elem.clear();
-      elem.getValue();                // These five functions are great
-      elem.setValue('newValue');      // for writing tests on views!
-      elem.fireEvent('click');        // ..
-      elem.getAttr('className');      // ..
-      elem.setAttr('src', 'blah');    // ..
-      var children = elem.getNodes();         // returns: [ PjsElements ]
-      var html = elem.toMarkup();             // returns: string of static markup
-      document.body.appendChild(elem.dom);    // to insert elements into the DOM
-      </code></pre>
-
-
-      <hr/>
-      
-      <h2>Using PajamaJS events:</h2>
-
-      <p>An event bus is provided to allow models and controllers to interact with each other without retaining object references.</p>
-
-      <pre><code>
-      pjs.defineController("EventReceiver", function(container) {
-        <span class="code-highlight">pjs.eventWaitAll</span>("HelloWorldEvent", function(data) {
-          console.log("HelloWorldEvent ->", data);
-          // pjs.route(...)
-        });
-        <span class="code-highlight">pjs.eventWaitOne</span>("HelloWorldEvent", function(data) {
-          console.log("HelloWorldEvent ->", data);
-        });
-      });
-      </code></pre>
-      <br />
-      <pre><code>
-      pjs.defineModel("EventEmitter", function() {
-        this.submitForm = function() {
-          <span class="code-highlight">pjs.triggerEvent</span>("HelloWorldEvent", { foo: 'bar' } );
-          <span class="code-highlight">pjs.triggerEvent</span>("HelloWorldEvent", { foo: 'foo' } );
-        };
-      });
-      </code></pre>
-
-
-      <hr />
-
-      <h2>Using PajamaJS models:</h2>
-      
-      <pre><code>
-        <span class="code-highlight">pjs.defineModel</span>("ExampleModel", function(arg1, arg2) {
-          // Append everything to 'this'
-          this.number = 1;
-        });
-
-        var instance = new <span class="code-highlight">pjs.model</span>("ExampleModel", arg1, arg2);
-      </code></pre>
-
-      <hr />
-
-      <h2>Using PajamaJS views:</h2>
-      
-      <pre><code>
-        <span class="code-highlight">pjs.defineView</span>("ExampleView", function(arg1, arg2) {
-          // 'this' is an instance of pjs.element({ tag: 'div' })
-          this.append({ innerHTML: 'w00p' });
-          
-          // This is a nice shorthand to map an array of models into views:
-          this.append({ tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' });
-        });
-
-        var instance = new <span class="code-highlight">pjs.view</span>("ExampleView", arg1, arg2);
-        container.append(instance);
-      </code></pre>
-
-      <hr />
-
-      <h2>Using PajamaJS controllers:</h2>
-      
-      <pre><code>
-        <span class="code-highlight">pjs.defineController</span>("ExampleController", function(arg1, arg2) {
-          this.action = function() { };
-        });
-
-        var instance = new <span class="code-highlight">pjs.controller</span>("ExampleController", arg1, arg2);
-        instance.action();
-      </code></pre>
-
-      <hr />
-
-      <h2>Separating the functional from the presentational:</h2>
-
-      <pre><code>
-      pjs.defineView("SomeView", function(myModel) {
-
-        <span class="code-highlight">this._valueInput = { tag: 'input', value: { someValue: myModel } };</span>
-        <span class="code-highlight">this._submitButton = { tag: 'input', click: { someFunction: myModel } };</span>
-
-        this.append(
-          { id:'container', classes: ['content-box'], contains: [
-            { tag: 'img', src: 'images/flow.png' },
-            { tag: 'div', classes: ['float-right'], contains: [
-              { tag: 'span', text: 'Total Price:' },
-              <span class="code-highlight">this._valueInput,</span>
-              { tag: 'span', classes: ['small-text'], text: '(in pence)' }
-            ] },
-            { tag: 'div', classes: ['clear-right'], contains: [
-              <span class="code-highlight">this._submitButton</span>
-            ] }
-          ] }
-        );
-
-      });
-      </code></pre>
-      <p>Check out how we've separated the <em>functional</em> and <em>presentational</em> parts of the view!</p>
-      
-      <hr />
-
-      <h2>Putting it all together:</h2>
-
-      <pre><code>
-      &lt;!doctype html>
-      &lt;html>
-        &lt;head>
-          &lt;script type="text/javascript" src="js/browser.pajama.js">&lt;/script>
-        &lt;/head>
-      &lt;/html>
-      </code></pre>
-      <br />
-      <pre><code>
-      window.onload = function() {
-        pjs.defineRoutes(document.body, [
-          { path: "", controller: "main" }
-        ]);
-      };
-      </code></pre>
-      <br />
-      <pre><code>
-      pjs.defineController("main", function(container) {
-        var myModel = new pjs.model("LibraryModel");
-        var myView = new pjs.view("LibraryView", myModel);
-        container.append(myView);
-      });
-      </code></pre>
-      <br />
-      <pre><code>
-      pjs.defineModel("LibraryModel", function() {
-        this.name = "Default";
-        this.books = [ { name: 'brochure', pages: 10 }, 
-                       { name: 'poster',   pages: 1  } ];
-        this.addBook = function() {
-          this.books.push({ name: 'test', pages: Math.random()*100 });
-        };
-        this.sortBooks = function() {
-          this.books.sort(function(a, b) { return a.pages - b.pages; });
-        };
-        this.popBook = function() {
-          this.books.pop();
-        };
-      });
-      </code></pre>
-      <br />
-      <pre><code>
-      pjs.defineView("LibraryView", function(myModel) {
-        this._container = new pjs.element(
-          { tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' }
-        );
-        this._addButton = { tag: "input", type: "button", value: "Add", 
-                            click: { addBook: myModel } };
-        this._sortButton = { tag: "input", type: "button", value: "Sort", 
-                             click: { sortBooks: myModel } };
-        this._popButton = { tag: "input", type: "button", value: "Pop", 
-                            click: { popBook: myModel } };
-        this.append(this._container, this._addButton, 
-                    this._sortButton, this._popButton);
-      });
-
-      pjs.defineView("LibraryBook", function(book) {
-        this.append({ tag: 'div', contains: [
-          { tag: 'input', value: { name: book } },
-          { tag: 'input', value: { pages: book} } 
-        ]});
-      });
-      </code></pre>
-      <br />
-      <div id="demo-area"></div>
-      <pre id="console-area"></pre>
-
-      <script type="text/javascript">
-      pjs.defineModel("LibraryModel", function() {
-        this.books = [ { name: 'book1', pages: 10 } ];
-        
-        this.addBook = function() {
-          this.books.push({ name: 'test', pages: Math.round(Math.random()*100) });
-        };
-
-        this.sortBooks = function() {
-          this.books.sort(function(a, b) { return a.pages - b.pages; })
-        }
-
-        this.popBook = function() {
-          this.books.pop();
-        }
-      });
-
-      pjs.defineView("LibraryView", function(myModel) {
-        this._container = new pjs.element(
-          { tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' }
-        );
-        this._addButton = { tag: "input", type: "button", value: "Add", 
-                            click: { addBook: myModel } };
-        this._sortButton = { tag: "input", type: "button", value: "Sort", 
-                             click: { sortBooks: myModel } };
-        this._popButton = { tag: "input", type: "button", value: "Pop", 
-                            click: { popBook: myModel } };
-        this.append(this._container, this._addButton, 
-                    this._sortButton, this._popButton);
-      });
-
-      pjs.defineView("LibraryBook", function(book) {
-        this.append({ tag: 'div', contains: [
-          { tag: 'input', value: { name: book } },
-          { tag: 'input', value: { pages: book} } 
-        ]});
-      });
-
-      var demoModel = new pjs.model("LibraryModel");
-      var demoView = new pjs.view("LibraryView", demoModel);
-      document.getElementById("demo-area").appendChild(demoView.dom);
-
-      var consoleArea = document.getElementById("console-area");
-      setInterval(function() {
-        consoleArea.innerHTML = JSON.stringify(demoModel, null, 2);
-      }, 250);
-      </script>
-
-      <div style="clear: both">&nbsp;</div>
-
-      <script>
-        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-
-        ga('create', 'UA-42700838-1', 'pajamajs.com');
-        ga('send', 'pageview');
-      </script>
     </div>
+    <div class="container language-javascript">
+      <div id="main-content" class="col-md-9">
+        
+        <div class="alert alert-warning"><b>WARNING</b> This is experimental framework exploring alternative ways of creating javascript applications. <br /> It is intended as food for thought. It is not ready for real world use cases!</div>
+
+
+
+
+
+        <h2>Ideology</h2>
+
+        <p>The framework's design goals include:</p>
+
+        <dl class="dl-horizontal">
+          <dt>Forget about the DOM</dt>
+          <dd>Stop using selectors to target elements, they're evil!</dd>
+
+          <dt>Pure Javascript</dt>
+          <dd>We're not writing a Web App, its a Javascript app!</dd>
+
+          <dt>JSON templates</dt>
+          <dd>They're supported natively, efficient to type and read nicely.</dd>
+
+          <dt>Two-way data binding</dt>
+          <dd>Abstract your data into a model and let the framework provide consitency with the UI.</dd>
+
+          <dt>Isomorphic</dt>
+          <dd>Run your code in the browser, on a server, or a bit of both!</dd>
+
+          <dt>Desktop Native</dt>
+          <dd>Serve your Javascript application as a native desktop application!</dd>
+
+          <dt>Dynamic Script Loader</dt>
+          <dd>The framework should load your application for you.</dd>
+
+          <dt>Persistent Routing</dt>
+          <dd>Changing route and posting data between routes should be simple and survive page reloads.</dd>
+
+          <dt>Easy to Test</dt>
+          <dd>Tests are important, there should be no reason to avoid them.</dd>
+        </dl>
+
+
+
+
+
+        <h2>TodoMVC</h2>
+
+        <p>If you want to jump straight in and see a demo, take a look at an implementation of todo-mvc in PajamaJS:</p>
+        <a class="btn btn-primary" href="todo-mvc/" role="button">Show Me</a>        
+
+
+
+
+
+        <h2>Component Overview</h2>
+
+        <p>Pajama.js consists of 6 main components:</p>
+
+        <dl class="dl-horizontal">
+          <dt>Models</dt>
+          <dd>Encapsulate functions and properties that will bind to a View. Models also contain any relevant application level logic.</dd>
+
+          <dt>Elements</dt>
+          <dd>Contain JSON templates, they provide all DOM abstractions and deal with two-way data binding with Models.</dd>
+          
+          <dt>Views</dt>
+          <dd>Construct and combine Elements to build up complex UI.</dd>
+          
+          <dt>Controllers</dt>
+          <dd>Handle top level routing logic and manage application state. They construct Models and Views.</dd>
+          
+          <dt>Events</dt>
+          <dd>Facilitate communication between models and/or controllers, avoiding unnecessary coupling.</dd>
+          
+          <dt>Routes</dt>
+          <dd>Connect URLs to Controllers enabling application navigation.</dd>
+        </dl>
+
+
+
+
+
+        <h2>Models</h2>
+        
+        <p>To define a model, it must be identified by name:</p>
+
+        <script type="text/template">
+          pjs.defineModel("ExampleModel", function(/* args */) {
+            // Append everything to 'this'
+            this.number = 1;
+          });
+        </script>
+
+        <p>To create an instance of a model, reference it by name:</p>
+
+        <script type="text/template">
+          var instance = new pjs.model("ExampleModel"/* , args */);
+        </script>
+
+        <p>Technically speaking, models can be substituted for any generic object. The wrapper is provided to enable dynamic script loading and for consistency with Views.</p>
+
+
+
+
+
+        <h2>Elements</h2>
+
+        <h3>The Basics</h3>
+        <p>This is how to create a new element:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options go here */ });
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;/div>');
+        </script>
+
+        <p>An elements tag defaults to <code>div</code>, it can be changed by passing a <code>tag</code> option into the constructor:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ tag: 'span' });
+          assert.equal(elem.toMarkup(), '&lt;span>&lt;/span>');
+        </script>
+
+        <p>Most other options are simply converted into attributes:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ tag: 'input', type: 'text', value: 'hello' });
+          assert.equal(elem.toMarkup(), '&lt;input type="text" value="hello">&lt;/input>');
+        </script>
+
+        <p>Classes must be added to an element like this:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ classes: [ 'one', 'two', 'three' ] });
+          assert.equal(elem.toMarkup(), '&lt;div class="one two three">&lt;/div>');
+        </script>
+
+        <h3>Concatenation</h3>
+
+        <p>Elements can be appended to one another:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          elem.append(new pjs.element({ /* options */ }));
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;div>&lt;/div>&lt;/div>');
+        </script>
+
+        <p>Throwing around the <code>new pjs.element</code> constructor gets tiring, the same behaviour can be had by simply dropping it:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          elem.append({ /* options */ });
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;div>&lt;/div>&lt;/div>');
+        </script>
+
+        <p>There are two other overrides for making it easier to stack together elements:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          elem.append({ /* options */ }, { /* options */ });
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;div>&lt;/div>&lt;div>&lt;/div>&lt;/div>');
+
+          elem = new pjs.element({ /* options */ });
+          elem.append([ { /* options */ }, { /* options */ } ]);
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;div>&lt;/div>&lt;div>&lt;/div>&lt;/div>');
+        </script>
+
+        <p>In addition to append, there is also prepend:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          elem.prepend({ /* options */ });
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;div>&lt;/div>&lt;/div>');
+        </script>
+
+        <h3>Removal</h3>
+
+        <p>To remove an element from it's container, there is a <code>remove</code> function:</p>
+
+        <script type="text/template">
+          var elem1 = new pjs.element({ /* options */ });
+          var elem2 = new pjs.element({ /* options */ });
+          elem1.append(elem2);
+          elem2.remove();
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;/div>');
+        </script>
+
+        <p>To remove all children from a container, there is a <code>clear</code> function:</p>
+
+        <script type="text/template">
+          var elem1 = new pjs.element({ /* options */ });
+          var elem2 = new pjs.element({ /* options */ });
+          elem1.append(elem2);
+          elem1.clear();
+          assert.equal(elem.toMarkup(), '&lt;div>&lt;/div>');
+        </script>
+
+        <h3>Iteration</h3>
+
+        <p>To list all child nodes of a container, there is a <code>getNodes</code> function:</p>
+
+        <script type="text/template">
+          var elem1 = new pjs.element({ /* options */ });
+          var elem2 = new pjs.element({ /* options */ });
+          elem1.append(elem2);
+          assert.equal(elem.getNodes(), [ elem2 ]);
+        </script>
+
+        <p>The underlying DOM element can (but shouldn't!) be accessed like this:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          document.body.appendChild(elem.dom);
+        </script>
+
+        <p>To get or set an attribute on an existing element:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          elem.setAttr('attrNameHere', 'foobar');
+          assert.equal(elem.getAttr('attrNameHere'), 'foobar');
+          assert.equal(elem.toMarkup(), '&lt;div attrNameHere="foobar">&lt;/div>');
+        </script>
+
+        <h3>DOM Events and Inputs</h3>
+
+        <p>There is a helper to force an event to fire:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ /* options */ });
+          elem.fireEvent('click');        // great for testing!
+        </script>
+
+        <p>Finally, there are helpers for form inputs to access values:</p>
+
+        <script type="text/template">
+          var elem = new pjs.element({ tag: 'input', type:'text' });
+          elem.setValue('iTypedThis');      // great for testing!
+          assert.equal(elem.getValue(), 'iTypedThis');
+          assert.equal(elem.toMarkup(), '<input type="text" value="iTypedThis"></input>');
+        </script>
+
+        <h3>Two Way Data Binding (basic)</h3>
+
+        <p>To set up a two-way data binding, pass in an object instead of a string as an option value. In the next example, <code>value: { price: myModel }</code> should read as <code>the `value` should bind to the `price` property of `myModel`</code>.</p>
+
+        <p>If anything updates the model, the text in the input box will update immediately. If the text in the input box changes, the value of the model will update immediately. If anyone is wondering, one update will never trigger the other.</p>
+        
+        <script type="text/template">
+          var myModel = { price: "1234567" };
+          var elem = new pjs.element(
+            { tag: 'input', type: 'text', value: { price: myModel } }
+          );
+          container.append(elem);
+        </script>
+
+        <p>To bind a Model's function to an event on an element it is exactly the same as setting up a two-way data binding, only the named property on the model should resolve to a function. In the next example, <code>click: { alert: myModel }</code> should read as <code>on `click`, invoke `alert` on `myModel`</code>.</p>
+
+        <p>When the named event on the element is triggered, the function on the model will be invoked within the scope of the model.</p>
+        
+        <script type="text/template">
+          var myModel = {
+            alert: function() { alert("This rocks!"); }
+          };
+          var elem = new pjs.element(
+            { tag: "input", type: "button", click: { alert: myModel } }
+          );
+          container.append(elem);
+        </script>
+
+        <p>Taking things further, this next example sets up a button and a div, whereby clicking the button fires an event, which triggers the bound function <code>increment</code>, which updates the <code>counter</code> property on model, which is bound to the <code>innerHTML</code> property of the div. Beautiful.</p>
+        
+        <script type="text/template">
+          var myModel = {
+            counter: 0,
+            increment: function() { this.counter++; }
+          };
+          var elem = new pjs.element(
+            { tag: "div", innerHTML: { counter: myModel } },
+            { tag: "input", type: "button", click: { increment: myModel } }
+          );
+          container.append(elem);
+        </script>
+
+        <h3>Two Way Data Binding (arrays)</h3>
+
+        <p>We can also bind arrays to an element in order to dynamically alter its contents. In this next example there is a <code>library</code> model which has a <code>books</code> property containing a list of book titles. The element definition should read <code>the `div` contains the `books` in `library`, forEach `book` return ...</code>.</p>
+
+        <p>The <code>book</code> variable within the anonymous function is an item within <code>library.books</code>. The return value of the anonymous function is passed into a constructor to <code>pjs.element</code> when gets appended to the container.</p>
+
+        <p>As <code>library.books</code> gets mutated, the contents of <code>elem</code> automagically update to match. Pop()ing an item from the array will remove the corresponding DOM element, Push()ing a new item into the array will create a new DOM element, and so on.</p>
+        
+        <script type="text/template">
+          var library = {
+            books: [ { name: 'book1' } ]
+          };
+          var elem = new pjs.element(
+            { tag: 'div', contains: { books: library }, forEach: function(book) {
+              return { tag: 'input', type: 'text', value: { name: book  } };
+            } }
+          );
+          container.append(elem);
+        </script>
+
+        <p>Once we're using views, there is an alternative way of using <code>contains</code> by specifying a <code>usingView</code> property. Instead of running each object through the forEach function, it gets passed into a new view with the resulting element being appended to the container:</p>
+        
+        <script type="text/template">
+          var library = {
+            books: [ { name: 'book1' } ]
+          };
+          var elem = new pjs.element(
+            { tag: 'div', contains: { books: library }, usingView: 'LibraryBook' }
+          );
+          container.append(elem);
+        </script>
+
+
+        
+
+
+
+        <h2>Views</h2>
+
+        <p>To define a view, it must be identified by name:</p>
+
+        <script type="text/template">
+          pjs.defineView("ExampleView", function(/* args */) {
+            // `this` is an instance of pjs.element({ tag: 'div' })
+          });
+        </script>
+
+        <p>To create an instance of a view, reference it by name:</p>
+
+        <script type="text/template">
+          var instance = new pjs.view("ExampleView"/* , args */);
+          // `instance` is now an instance of pjs.element()
+        </script>
+
+        <p>The typical use case for a view is to initialise other views or elements and append them to the instance. If all bound elements are attached to the element as properties, it will ease testing:</p>
+
+        <script type="text/template">
+          pjs.defineView("SomeView", function(myModel) {
+
+            this._valueInput = { tag: 'input', value: { someValue: myModel } };
+            this._submitButton = { tag: 'input', click: { someFunction: myModel } };
+
+            this.append(
+              { id:'container', classes: ['content-box'], contains: [
+                { tag: 'img', src: 'images/flow.png' },
+                { tag: 'div', classes: ['float-right'], contains: [
+                  { tag: 'span', text: 'Total Price:' },
+                  this._valueInput,
+                  { tag: 'span', classes: ['small-text'], text: '(in pence)' }
+                ] },
+                { tag: 'div', classes: ['clear-right'], contains: [
+                  this._submitButton
+                ] }
+              ] }
+            );
+
+          });
+
+          var myView = new pjs.view("SomeView");
+          myView._submitButton.fireEvent("click");
+        </script>
+
+
+
+
+
+        <h2>Controllers</h2>
+
+        <p>To define a controller, it must be identified by name:</p>
+
+        <script type="text/template">
+          pjs.defineController("ExampleController", function(/* args */) {
+            // Append everything to 'this'
+            this.alert = function() { alert("Test"); };
+          });
+        </script>
+        
+        <p>To create an instance of a controller, reference it by name:</p>
+
+        <script type="text/template">
+          var instance = new pjs.controller("ExampleController"/* , args */);
+          instance.alert();
+        </script>
+
+        <p>Technically speaking, controllers can be substituted for any function or object. The wrapper is provided to enable dynamic script loading and for consistency with Views.</p>
+
+
+
+
+
+
+        <h2>Events</h2>
+
+        <p>An event bus is provided to allow models and controllers to interact with each other without retaining object references.</p>
+
+        <p>This is how to listen for an event:</p>
+        
+        <script type="text/template">
+          pjs.eventWaitAll("eventNameGoesHere", function(/* args */) { });
+        </script>
+
+        <p>This is how to a listen for a one-off event:</p>
+
+        <script type="text/template">
+          pjs.eventWaitOne("eventNameGoesHere", function(/* args */) { });
+        </script>
+
+        <p>Triggering an event:</p>
+
+        <script type="text/template">
+          pjs.triggerEvent("eventNameGoesHere", arg1, arg2 /*, ... */);
+        </script>
+
+        <p>Here's an example of using an Event to convert a button click into a redirect:</p>
+
+        <script type="text/template">
+          // The view bings `click` to invoke `submit` on `model`:
+          pjs.defineView("ExampleView", function(model) {
+            this.append({ tag: "input", type: "button", click: { submit: model });
+          });
+
+          // The model's `submit` emits an event:
+          pjs.defineModel("ExampleModel", function() {
+            this.submit = function() {
+              pjs.triggerEvent("submit", { foo: 'bar' } );
+            };
+          });
+ 
+          // The controller waits for the event and re-routes:
+          pjs.defineController("EventReceiver", function(container) {
+            pjs.eventWaitAll("submit", function(data) {
+              pjs.route(/* ... */);
+            });
+          });
+        </script>
+
+
+
+
+
+        <h2>Routes</h2>
+
+        <p>The project kicks off in js/routes.js, it associates URLs with controllers:</p>
+        
+        <p>The first parameter to defineRoutes is the DOM element to contain our app. The second parameter is an array of routes, with each route connecting a path to a controller.</p>
+
+        <p>Controller "main" for page #1, demonstrating how to move between pages:</p>
+
+        <script type="text/template">
+          window.onload = function() {
+            pjs.defineRoutes(document.body, [
+              { path: "", controller: "main" },                        // <-- page #1
+              { path: "booking/lookup", controller: "viewBooking" },   // <-- page #2
+              { path: "booking/edit", controller: "editBooking" },     // <-- page #3
+              /* more routes go here */
+            ]);
+          };
+        </script>
+
+        <script type="text/template">
+          pjs.defineController("main", function(container) {
+            // In 3 seconds, send us to the next page
+            setTimeout(function() {
+              pjs.route("booking/*/view", 1392);
+            }, 3000);
+          });
+        </script>
+
+        <p>Top level controllers are invoked with the top level DOM element abstracted away behind an instance of PjsElement.</p>
+
+        <p>Controller "viewBooking" for page #2, demonstrating a URL containing data:</p>
+        
+        <script type="text/template">
+          // Asterisks in a route are read out of the url and passed into the controller
+          pjs.defineController("viewBooking", function(container, bookingId) {
+            console.log("bookingId is:", bookingId);
+            // In 3 seconds, send us to the next page
+            setTimeout(function() {
+              var bigObject = new Array(1024*1024);
+              pjs.route("booking/*/edit", 1392, bigObject);
+            }, 3000);
+          });
+        </script>
+
+        <p>Controller "editBooking" for page #3, demonstrating a URL with additional big data:</p>
+        
+        <script type="text/template">
+          // Additional parameters are also passed into the controller
+          pjs.defineController("editBooking", function(container, bookingId, bigObject) {
+            console.log("bigObject is", bigObject);
+          });
+        </script>
+
+        <p>Data passed around in the routing will persist through page reloads and browser navigation.</p>
+
+
+
+
+
+        <h2>Project Structure</h2>
+
+        <p>The <code>Todo-MVC</code> implementation looks like this:</p>
+
+        <script type="text/files">
+          website/todo-mvc
+          ├── Controller
+          │   └── TodoController.js
+          ├── Model
+          │   ├── ItemModel.js
+          │   └── ListModel.js
+          ├── View
+          │   ├── ItemView.js
+          │   └── ListView.js
+          ├── base.css
+          ├── bg.png
+          ├── browser.pajama.js
+          ├── index.html
+          └── routes.js
+        </script>
+        
+        <p><code>index.html</code>:</p>
+
+        <script type="text/markup">
+          &lt;!DOCTYPE html>
+          &lt;html>
+            &lt;head>
+              &lt;script type="text/javascript" src="browser.pajama.js">&lt;/script>
+              &lt;script type="text/javascript" src="routes.js">&lt;/script>
+              
+              &lt;link rel="stylesheet" type="text/css" href="base.css" />
+            &lt;/head>
+            &lt;body>
+              &lt;img src="img/ajax-loader.gif" class="ajax-loader" />
+            &lt;/body>
+          &lt;/html>
+        </script>
+
+
+
+
+
+        <h2>Script Loader</h2>
+
+        <p>After routes have been initialised, Pajama.js attempts to pull down every named controller from expected locations. Each time a new file is loaded it is scanned for additional dependencies and those too are loaded. This cycle continues until all name dependencies have been loaded.</p>
+
+        <p>Throughout this process, the script loader prints debugging into to the console.</p>
+
+        <p>Here is the console output for the TodoMVC demo:</p>
+
+        <script type="text/template">
+          Initialising...
+          Loading [http://www.pajamajs.com/todo-mvc/Controller/TodoController.js]
+          Loading [http://www.pajamajs.com/todo-mvc/Model/ListModel.js]
+          Loading [http://www.pajamajs.com/todo-mvc/View/ListView.js]
+          Loading [http://www.pajamajs.com/todo-mvc/Model/ItemModel.js]
+          Loading [http://www.pajamajs.com/todo-mvc/View/ItemView.js]
+          Finished Loading Dependencies
+          Routing to [/]
+        </script>
+
+
+
+
+
+        <h2>Serverside Rendering</h2>
+
+        <p>Running PajamaJS serverside to serve up static content:</p>
+        
+        <script type="text/template">
+          #!/usr/bin/node
+          var http = require("http");
+          var pjs = require("node.pajama.js");
+       
+          http.createServer(function(request, response) {
+            var body = new pjs.element({ tag: "body" });
+            body.append({ tag: "div", innerHTML: "Hello World" });
+
+            response.writeHead(200);
+            response.write(<span class="code-highlight">body.toMarkup()</span>);
+            response.end();
+          }).listen(8080);
+        </script>
+
+        <p>Instances of pjs.element can be converted into flat markup via the .toMarkup() function.</p>
+
+
+
+
+
+        <h2>Clientside Inversion</h2>
+
+        <p>This is extremeley experimental. You can find the full demo in the GitHub repository, execute it with <code>node ./demo/inverted/server.js</code> and navigate to <code>http://localhost:8080</code></p>
+        
+        <script type="text/template">
+          #!/usr/bin/node
+          var pjs = require("./node.pajama.js");
+
+          var mainController = function(body) {
+            body.append(new pjs.element({ tag: 'div', innerHTML: 'Loading...' }));
+            setTimeout(function() {
+              body.clear();
+              body.append(new pjs.element({ tag: 'div', innerHTML: 'Hello World' }));
+            }, 2000);
+          };
+
+          pjs.startServer({
+            host: "localhost",
+            port: 8080
+          }, [
+            { url: '/', controller: mainController },
+          ]);
+        </script>
+
+        <p>This example will start a HTTP server running on the named host and port. It responds to every request with some very basic javascript which will initiate a SocketIO connection back to the server and send the current URL up the websocket. The request will be routed through PajamaJS into one of the controllers and from that point onwards, the clients DOM will synchronise with the serverside DOM (represented by the 'body' object).</p>
+
+
+
+
+
+        <h2>Native Applications</h2>
+
+        <p>This is extremeley experimental. You can find the full demo in the GitHub repository, execute it with <code>node ./demo/native/sampleApp.js</code></p>
+
+        <script type="text/template">
+          #! /usr/bin/env node
+          var pjs = require("./node.pajama.js");
+
+          var mainController = function(body) {
+            body.append(new pjs.element({ tag: 'div', innerHTML: 'Loading...' }));
+            setTimeout(function() {
+              body.clear();
+              body.append(new pjs.element({ tag: 'div', innerHTML: 'Hello World' }));
+            }, 2000);
+          };
+
+          pjs.nativeApp({
+            width: 700,
+            height: 500,
+            main: mainController
+          });
+        </script>
+
+
+
+
+
+        <h2>Tests</h2>
+
+        <p>Does all this work in your browser? Scroll down to find out!</p>
+
+        <div id="qunit"></div>
+        <div id="qunit-fixture"></div>
+        <script type="text/javascript" src="js/tests.js"></script>
+        
+
+
+
+        
+        <h2>In-Line Demo</h2>
+        
+        <div class="row">
+          <div class="col-md-7">
+            <pre id="demo-area"></pre>
+          </div>
+          <div class="col-md-5">
+            <pre id="console-area"></pre>
+          </div>
+        </div>
+
+        <script type="text/javascript">
+          pjs.defineModel("LibraryModel", function() {
+            this.books = [ { name: 'book1', pages: 10 } ];
+            this.addBook = function() {
+              this.books.push({ name: 'test', pages: Math.round(Math.random()*100) });
+            };
+            this.sortBooks = function() {
+              this.books.sort(function(a, b) { return a.pages - b.pages; })
+            }
+            this.popBook = function() {
+              this.books.pop();
+            }
+          });
+
+          pjs.defineView("LibraryView", function(myModel) {
+            this._container = new pjs.element(
+              { tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' }
+            );
+            this._addButton = { 
+              tag: "input", type: "button", classes: [ 'btn', 'btn-primary', 'btn-sm' ],
+              value: "Add", click: { addBook: myModel } 
+            };
+            this._sortButton = { 
+              tag: "input", type: "button", classes: [ 'btn', 'btn-primary', 'btn-sm' ],
+              value: "Sort",  click: { sortBooks: myModel } 
+            };
+            this._popButton = { 
+              tag: "input", type: "button", classes: [ 'btn', 'btn-primary', 'btn-sm' ],
+              value: "Pop", click: { popBook: myModel } 
+            };
+            this.append(this._container, this._addButton, 
+                        this._sortButton, this._popButton);
+          });
+
+          pjs.defineView("LibraryBook", function(book) {
+            this.append({ tag: 'div', contains: [
+              { tag: 'input', classes: [ 'form-control', 'input-sm' ], value: { name: book } },
+              { tag: 'input', classes: [ 'form-control', 'input-sm' ], value: { pages: book} } 
+            ]});
+          });
+
+          var demoModel = new pjs.model("LibraryModel");
+          var demoView = new pjs.view("LibraryView", demoModel);
+          document.getElementById("demo-area").appendChild(demoView.dom);
+
+          var consoleArea = document.getElementById("console-area");
+          setInterval(function() {
+            consoleArea.innerHTML = JSON.stringify(demoModel, null, 2);
+          }, 500);
+        </script>
+
+        <p>Code:</p>
+
+        <script type="text/template">
+          pjs.defineModel("LibraryModel", function() {
+            this.books = [ { name: 'book1', pages: 10 } ];
+            this.addBook = function() {
+              this.books.push({ name: 'test', pages: Math.round(Math.random()*100) });
+            };
+            this.sortBooks = function() {
+              this.books.sort(function(a, b) { return a.pages - b.pages; })
+            }
+            this.popBook = function() {
+              this.books.pop();
+            }
+          });
+
+          pjs.defineView("LibraryView", function(myModel) {
+            this._container = new pjs.element(
+              { tag: 'div', contains: { books: myModel }, usingView: 'LibraryBook' }
+            );
+            this._addButton = { 
+              tag: "input", type: "button", classes: [ 'btn', 'btn-primary' ],
+              value: "Add", click: { addBook: myModel } 
+            };
+            this._sortButton = { 
+              tag: "input", type: "button", classes: [ 'btn', 'btn-primary' ],
+              value: "Sort",  click: { sortBooks: myModel } 
+            };
+            this._popButton = { 
+              tag: "input", type: "button", classes: [ 'btn', 'btn-primary' ],
+              value: "Pop", click: { popBook: myModel } 
+            };
+            this.append(this._container, this._addButton, 
+                        this._sortButton, this._popButton);
+          });
+
+          pjs.defineView("LibraryBook", function(book) {
+            this.append({ tag: 'div', contains: [
+              { tag: 'input', classes: [ 'form-control' ], value: { name: book } },
+              { tag: 'input', classes: [ 'form-control' ], value: { pages: book} } 
+            ]});
+          });
+
+          var demoModel = new pjs.model("LibraryModel");
+          var demoView = new pjs.view("LibraryView", demoModel);
+          document.getElementById("demo-area").appendChild(demoView.dom);
+
+          var consoleArea = document.getElementById("console-area");
+          setInterval(function() {
+            consoleArea.innerHTML = JSON.stringify(demoModel, null, 2);
+          }, 500);
+        </script>
+
+        <br /><br />
+      </div>
+      <div id="nav-container" class="col-md-3">
+        <ul id="nav-menu" class="nav nav-stacked hidden-xs hidden-sm" data-spy="affix" data-offset-top="250"></ul>
+      </div>
+    </div>  
+
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/prism.js"></script>
+    <script src="js/cleanupPage.js"></script>
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-42700838-1', 'pajamajs.com');
+      ga('send', 'pageview');
+    </script>
   </body>
 </html>
