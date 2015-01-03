@@ -167,11 +167,12 @@
     }
     if (data.contains) {
       var items = data.contains;
+      var key;
       if ((items instanceof Object) && (Object.keys(items).length==1) && (data.forEach)) {
-        var key = Object.keys(items)[0];
+        key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, data.forEach);
       } else if ((items instanceof Object) && (Object.keys(items).length==1) && (data.usingView)) {
-        var key = Object.keys(items)[0];
+        key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, function(someItem) {
           mvc.view[data.usingView].apply(self, [ someItem ]);
         });

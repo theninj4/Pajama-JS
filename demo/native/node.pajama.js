@@ -100,7 +100,7 @@
   }
 
   function PjsBindProperty(model, bind, attr, element) {
-    if (model[bind] == undefined) {
+    if (model[bind] === undefined) {
       model[bind] = "";
     }
     if (model[bind] instanceof Function) {
@@ -440,11 +440,12 @@
     }
     if (data.contains) {
       var items = data.contains;
+      var key;
       if ((items instanceof Object) && (Object.keys(items).length==1) && (data.forEach)) {
-        var key = Object.keys(items)[0];
+        key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, data.forEach);
       } else if ((items instanceof Object) && (Object.keys(items).length==1) && (data.usingView)) {
-        var key = Object.keys(items)[0];
+        key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, function(someItem) {
           mvc.view[data.usingView].apply(self, [ someItem ]);
         });
@@ -582,33 +583,34 @@
     socket.on('updateDom', function(data) {
       for (var i=0; i<data.length; i++) {
         var thisChange = data[i];
+        var tmp, target, parent, child;
         if (thisChange.type == "attr") {
-          var target = document.getElementById(thisChange.id);
+          target = document.getElementById(thisChange.id);
           if (target) {
             target[thisChange.attr] = thisChange.value;
           }
         } else if (thisChange.type == "append") {
-          var tmp = document.createElement('div');
+          tmp = document.createElement('div');
           tmp.innerHTML= thisChange.markup;
-          var target = document.getElementById(thisChange.parent);
+          target = document.getElementById(thisChange.parent);
           if (target) {
             target.appendChild(tmp.firstChild);
           }
         } else if (thisChange.type == "prepend") {
-          var tmp = document.createElement('div');
+          tmp = document.createElement('div');
           tmp.innerHTML= thisChange.markup;
-          var target = document.getElementById(thisChange.parent);
+          target = document.getElementById(thisChange.parent);
           if (target) {
             target.insertBefore(tmp.firstChild, target.firstChild);  
           }
         } else if (thisChange.type == "remove") {
-          var parent = document.getElementById(thisChange.parent);
-          var child = document.getElementById(thisChange.child);
+          parent = document.getElementById(thisChange.parent);
+          child = document.getElementById(thisChange.child);
           if (parent) {
             parent.removeChild(child);
           }
         } else if (thisChange.type == "clear") {
-          var parent = document.getElementById(thisChange.parent);
+          parent = document.getElementById(thisChange.parent);
           if (parent) {
             parent.innerHTML = "";
           }

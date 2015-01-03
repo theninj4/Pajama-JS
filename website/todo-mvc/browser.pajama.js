@@ -8,7 +8,7 @@
   }
 
   function PjsBindProperty(model, bind, attr, element) {
-    if (model[bind] == undefined) {
+    if (model[bind] === undefined) {
       model[bind] = "";
     }
     if (model[bind] instanceof Function) {
@@ -348,11 +348,12 @@
     }
     if (data.contains) {
       var items = data.contains;
+      var key;
       if ((items instanceof Object) && (Object.keys(items).length==1) && (data.forEach)) {
-        var key = Object.keys(items)[0];
+        key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, data.forEach);
       } else if ((items instanceof Object) && (Object.keys(items).length==1) && (data.usingView)) {
-        var key = Object.keys(items)[0];
+        key = Object.keys(items)[0];
         PjsBindArray(items[key], key, self, function(someItem) {
           mvc.view[data.usingView].apply(self, [ someItem ]);
         });
@@ -483,7 +484,7 @@
 
   function scriptLoader(type, name, callback) {
     var newScript = document.createElement('script');
-    var path = window.location.pathname.split('/').slice(0,-1).join('/')+'/'
+    var path = window.location.pathname.split('/').slice(0,-1).join('/')+'/';
     newScript.src = window.location.origin+path+type+"/"+name+".js";
     console.log("Loading ["+newScript.src+"]");
     newScript.onload = function(event) {
@@ -518,7 +519,7 @@
           });
         }
       });
-      var otherViewDeps = functionText.split(/usingView: ?["'](.*?)["']/g)
+      var otherViewDeps = functionText.split(/usingView: ?["'](.*?)["']/g);
       for (var i=1; i<otherViewDeps.length; i+=2) {
         allDeps.push({
           container: mvc.view,

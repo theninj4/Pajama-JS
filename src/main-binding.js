@@ -6,7 +6,7 @@
   }
 
   function PjsBindProperty(model, bind, attr, element) {
-    if (model[bind] == undefined) {
+    if (model[bind] === undefined) {
       model[bind] = "";
     }
     if (model[bind] instanceof Function) {

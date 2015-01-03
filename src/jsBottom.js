@@ -1,7 +1,7 @@
 
   function scriptLoader(type, name, callback) {
     var newScript = document.createElement('script');
-    var path = window.location.pathname.split('/').slice(0,-1).join('/')+'/'
+    var path = window.location.pathname.split('/').slice(0,-1).join('/')+'/';
     newScript.src = window.location.origin+path+type+"/"+name+".js";
     console.log("Loading ["+newScript.src+"]");
     newScript.onload = function(event) {
@@ -36,7 +36,7 @@
           });
         }
       });
-      var otherViewDeps = functionText.split(/usingView: ?["'](.*?)["']/g)
+      var otherViewDeps = functionText.split(/usingView: ?["'](.*?)["']/g);
       for (var i=1; i<otherViewDeps.length; i+=2) {
         allDeps.push({
           container: mvc.view,
