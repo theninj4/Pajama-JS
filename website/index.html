@@ -305,14 +305,28 @@
         
         <script type="text/template">
           var myModel = {
-            counter: 0,
+            counter: 1,
             increment: function() { this.counter++; }
           };
-          var elem = new pjs.element(
+          container.append(
             { tag: "div", innerHTML: { counter: myModel } },
             { tag: "input", type: "button", click: { increment: myModel } }
           );
-          container.append(elem);
+        </script>
+
+        <div id="binding-demo"></div>
+        <script type="text/javascript">
+          var myModel = {
+            counter: 1,
+            increment: function() { this.counter++; }
+          };
+          var elem = new pjs.element({ tag: 'pre' });
+          elem.append(
+            { tag: "input", type: "button", value: "++", click: { increment: myModel },
+              classes: [ 'btn', 'btn-primary', 'btn-sm' ] },
+            { tag: "span", innerHTML: { counter: myModel } }
+          );
+          document.getElementById("binding-demo").appendChild(elem.dom);
         </script>
 
         <h3>Two Way Data Binding (arrays)</h3>
@@ -346,6 +360,8 @@
           );
           container.append(elem);
         </script>
+
+        <p>There is a big in-line demo of this example at the very bottom of the page.</p>
 
 
         
@@ -477,58 +493,49 @@
 
         <h2>Routes</h2>
 
-        <p>The project kicks off in js/routes.js, it associates URLs with controllers:</p>
-        
-        <p>The first parameter to defineRoutes is the DOM element to contain our app. The second parameter is an array of routes, with each route connecting a path to a controller.</p>
+        <p>The intial entry point for every project is the invokation of <code>pjs.defineRoutes</code>. The first param should be the DOM node to contain the project. The second param should be a list of <code>routes</code>.</p>
 
-        <p>Controller "main" for page #1, demonstrating how to move between pages:</p>
+        <p>Each route should be a json object containing two properties, a <code>path</code> and a <code>controller</code> name:</p>
 
         <script type="text/template">
           window.onload = function() {
             pjs.defineRoutes(document.body, [
-              { path: "", controller: "main" },                        // <-- page #1
-              { path: "booking/lookup", controller: "viewBooking" },   // <-- page #2
-              { path: "booking/edit", controller: "editBooking" },     // <-- page #3
+              { path: "", controller: "main" },
+              { path: "booking/*/view", controller: "viewBooking" },
+              { path: "booking/*/edit", controller: "editBooking" },
               /* more routes go here */
             ]);
           };
         </script>
 
+        <p>When the routing layer invokes a controller, the first argument passed in is the DOM node wrapped up inside a pjs.element. Any params passed around, either as a part of the URL (GET style) or otherwise (POST style) will stack up as additional arguments.</p>
+
         <script type="text/template">
           pjs.defineController("main", function(container) {
-            // In 3 seconds, send us to the next page
-            setTimeout(function() {
-              pjs.route("booking/*/view", 1392);
-            }, 3000);
+            // ^^ container is an instance of pjs.element
+            // Re-route with a dynamic url param:
+            pjs.route("booking/*/view", 1392);
+            // Re-route with both a dynamic url param and a giant POST-like object:
+            var bigObject = new Array(1024*1024);
+            pjs.route("booking/*/edit", 1392, bigObject);
           });
         </script>
 
-        <p>Top level controllers are invoked with the top level DOM element abstracted away behind an instance of PjsElement.</p>
-
-        <p>Controller "viewBooking" for page #2, demonstrating a URL containing data:</p>
-        
         <script type="text/template">
-          // Asterisks in a route are read out of the url and passed into the controller
           pjs.defineController("viewBooking", function(container, bookingId) {
-            console.log("bookingId is:", bookingId);
-            // In 3 seconds, send us to the next page
-            setTimeout(function() {
-              var bigObject = new Array(1024*1024);
-              pjs.route("booking/*/edit", 1392, bigObject);
-            }, 3000);
+            console.log("bookingId is", bookingId);
           });
         </script>
 
-        <p>Controller "editBooking" for page #3, demonstrating a URL with additional big data:</p>
-        
         <script type="text/template">
-          // Additional parameters are also passed into the controller
           pjs.defineController("editBooking", function(container, bookingId, bigObject) {
-            console.log("bigObject is", bigObject);
+            console.log("bookingId is", bookingId, "and bigObject is", bigObject);
           });
         </script>
 
         <p>Data passed around in the routing will persist through page reloads and browser navigation.</p>
+
+        <p>Moving backwards and forwards in the browser will replay each route, complete with all associated GET-style and POST-style objects.</p>
 
 
 
