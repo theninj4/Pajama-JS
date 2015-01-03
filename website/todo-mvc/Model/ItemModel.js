@@ -41,13 +41,18 @@
     if (keyEvent.keyCode == 27) {
       this.isEditing = '';
     } else if (keyEvent.keyCode == 13) {
-      this.isEditing = '';
-      var processedText = this.updatedText.trim();
-      if (processedText.length > 0) {
-        this.text = processedText;
-      } else {
-        this.remove();
-      }
+      this.save();
+    }
+  };
+
+  ItemModel.prototype.save = function(keyEvent) {
+    if (!this.isEditing) return;
+    this.isEditing = '';
+    var processedText = this.updatedText.trim();
+    if (processedText.length > 0) {
+      this.text = processedText;
+    } else {
+      this.remove();
     }
   };
 

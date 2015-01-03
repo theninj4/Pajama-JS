@@ -1,7 +1,8 @@
 
   function scriptLoader(type, name, callback) {
     var newScript = document.createElement('script');
-    newScript.src = window.location.origin+window.location.pathname+type+"/"+name+".js";
+    var path = window.location.pathname.split('/').slice(0,-1).join('/')+'/'
+    newScript.src = window.location.origin+path+type+"/"+name+".js";
     console.log("Loading ["+newScript.src+"]");
     newScript.onload = function(event) {
       setTimeout(function() {
@@ -149,12 +150,8 @@
     console.log("Initialising...");
     window.onerror = errorHandler;
   
-    var loaded = false;
     window.onpopstate = function(event) {
-      if (loaded) {
-        routeViaUrl(container, window.location.hash.substring(1));
-      }
-      loaded = true;
+      routeViaUrl(container, window.location.hash.substring(1));
     };
 
     for (var item in routeList) {

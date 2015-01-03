@@ -8,7 +8,7 @@
     this.append({ tag: 'section', id: 'todoapp', contains: [
       { tag: 'header', id: 'header', contains: [
         { tag: 'h1', innerHTML: 'todos' },
-        { tag: 'input', id: 'new-todo', placeholder: 'What needs to be done?',
+        { tag: 'input', id: 'new-todo', placeholder: 'What needs to be done?', autofocus: 'autofocus',
           value: { newNoteText: todoList }, change: { createNewItem: todoList }
         }
       ]},

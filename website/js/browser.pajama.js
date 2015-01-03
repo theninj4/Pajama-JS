@@ -481,84 +481,10 @@
     };
   });
 
-  // var oneEm = new $Element({ tag: 'a' });
-  // oneEm.setText("M");
-  // $Dom("body").append(oneEm);
-  // var pxPerEm = oneEm.dom.offsetWidth;
-  var pxPerEm = 16;
-  
-  function getCssRule(selector, second) {
-    if (selector.substring(0,1) == "@") {
-      return {
-        style: { }
-      };
-    }
-    for (var i=0; i<document.styleSheets.length; i++) {
-      var someStyleSheet = document.styleSheets[i];
-      for (var j=0; j<someStyleSheet.cssRules.length; j++) {
-        if (someStyleSheet.cssRules[j].selectorText == selector) {
-          return someStyleSheet.cssRules[j];
-        }
-      }
-    }
-    if (second) {
-      console.error("Failed to create rule for", selector);
-      return {
-        style: { }
-      };
-    }
-    if (document.styleSheets[0].addRule) {
-      document.styleSheets[0].addRule(selector, "dummy: default");
-    } else {
-      document.styleSheets[0].insertRule(selector+"{ dummy: default }", document.styleSheets[0].length);
-    }
-    return getCssRule(selector, true);
-  }
-  
-  function addCssRule(cssRule, property, value) {
-    var parts = value.split(" ");
-    for (var i=0; i<parts.length; i++) {
-      var p = parts[i];
-      if ((""+p).match("^[0-9]{1,}px")) {
-        p = (""+p);
-        p = parseInt(p.substring(0, p.length-2), 10);
-        p = p / pxPerEm;
-        p = p + "em";
-        parts[i] = p;
-      }
-    }
-    value = parts.join(" ");
-    cssRule.style[property] = value;
-  }
-  
-  function pxToEm(p) {
-    return p / pxPerEm;
-  }
-  
-  function loadStyles(rules) {
-    var property;
-    for (var selector in rules) {
-      if ((selector.substring(0,1) == "@") || (selector.substring(0,2) == "::")) {
-        var tmp = document.createElement('style');
-        tmp.type = "text/css";
-        document.querySelectorAll('head')[0].appendChild(tmp);
-        var txt = "";
-        for (property in rules[selector]) {
-          txt += property+": "+rules[selector][property]+"; ";
-        }
-        tmp.appendChild(document.createTextNode(selector+" { "+txt+" }"));
-      } else {
-        var cssRule = getCssRule(selector);
-        for (property in rules[selector]) {
-          addCssRule(cssRule, property, rules[selector][property]);
-        }
-      }
-    }
-  }
-
   function scriptLoader(type, name, callback) {
     var newScript = document.createElement('script');
-    newScript.src = window.location.origin+window.location.pathname+type+"/"+name+".js";
+    var path = window.location.pathname.split('/').slice(0,-1).join('/')+'/'
+    newScript.src = window.location.origin+path+type+"/"+name+".js";
     console.log("Loading ["+newScript.src+"]");
     newScript.onload = function(event) {
       setTimeout(function() {
@@ -706,12 +632,8 @@
     console.log("Initialising...");
     window.onerror = errorHandler;
   
-    var loaded = false;
     window.onpopstate = function(event) {
-      if (loaded) {
-        routeViaUrl(container, window.location.hash.substring(1));
-      }
-      loaded = true;
+      routeViaUrl(container, window.location.hash.substring(1));
     };
 
     for (var item in routeList) {

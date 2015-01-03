@@ -84,7 +84,7 @@
     });
     self.itemCount = ''+stats.active;
     self.itemVerb = (stats.active==1) ? ' item left' : ' items left';
-    self.clearListText = 'Clear Completed ('+stats.completed+')';
+    self.clearListText = 'Clear completed ('+stats.completed+')';
     self.displayControls = (stats.total === 0) ? 'hidden' : '';
     self.allAreComplete = (stats.completed == stats.total);
     self.showClearCompleted = stats.completed === 0 ? 'hidden' : '';
