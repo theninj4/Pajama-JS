@@ -39,7 +39,7 @@
 
 	ListModel.prototype.clearCompletedItems = function() {
 		this.itemList = this.itemList.filter(function(listItem) {
-			return listItem.status == 'active';
+			return listItem.status === 'active';
 		});
 		this.updateListStats();
 	};
@@ -76,17 +76,17 @@
 			total: 0
 		};
 		self.itemList.forEach(function(listItem) {
-			if (self.viewOverride != 'no') {
+			if (self.viewOverride !== 'no') {
 				listItem.showIf(self.viewOverride);
 			}
 			stats[listItem.status]++;
 			stats.total++;
 		});
 		self.itemCount = ''+stats.active;
-		self.itemVerb = (stats.active==1) ? ' item left' : ' items left';
+		self.itemVerb = (stats.active===1) ? ' item left' : ' items left';
 		self.clearListText = 'Clear completed ('+stats.completed+')';
 		self.displayControls = (stats.total === 0) ? 'hidden' : '';
-		self.allAreComplete = (stats.completed == stats.total);
+		self.allAreComplete = (stats.completed === stats.total);
 		self.showClearCompleted = stats.completed === 0 ? 'hidden' : '';
 		pjs.triggerEvent('SaveNotes');
 	};

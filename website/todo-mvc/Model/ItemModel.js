@@ -19,13 +19,13 @@
 
 	ItemModel.prototype.setStatus = function(newStatus) {
 		this.status = newStatus;
-		this.completed = (this.status == 'completed');
+		this.completed = (this.status === 'completed');
 		pjs.triggerEvent('SaveNotes');
 		this.list.updateListStats();
 	};
 
 	ItemModel.prototype.showIf = function(status) {
-		this.isHidden = (status != this.status) ? 'hidden' : '';
+		this.isHidden = (status !== this.status) ? 'hidden' : '';
 	};
 
 	ItemModel.prototype.remove = function() {
@@ -38,15 +38,17 @@
 	};
 
 	ItemModel.prototype.update = function(keyEvent) {
-		if (keyEvent.keyCode == 27) {
+		if (keyEvent.keyCode === 27) {
 			this.isEditing = '';
-		} else if (keyEvent.keyCode == 13) {
+		} else if (keyEvent.keyCode === 13) {
 			this.save();
 		}
 	};
 
-	ItemModel.prototype.save = function(keyEvent) {
-		if (!this.isEditing) return;
+	ItemModel.prototype.save = function() {
+		if (!this.isEditing) {
+			return;
+		}
 		this.isEditing = '';
 		var processedText = this.updatedText.trim();
 		if (processedText.length > 0) {

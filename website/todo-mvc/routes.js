@@ -1,6 +1,11 @@
+/*global pjs */
 
-window.onload = function() {
-  pjs.defineRoutes(document.body, [
-    { path: "*", controller: "TodoController" },
-  ]);
-};
+(function () {
+	'use strict';
+
+	window.onload = function() {
+	  pjs.defineRoutes(document.body, [
+	    { path: '*', controller: 'TodoController' },
+	  ]);
+	};
+})();
