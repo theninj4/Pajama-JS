@@ -2,9 +2,7 @@
 Pajama-JS, aka 'pjs'
 ===
 
-The website for this project can be found here: www.pajamajs.com
-
-The src for the website is in this repo.
+The website for this project can be found in `/website`.
 
 
 Getting Started
